@@ -20,6 +20,19 @@ export default defineConfig({
 						{ label: 'Renderização Condicional', link: '/1-fundamentos/7-renderizacao-condicional/' },
 					],
 				},
+				{
+					label: 'Hooks Essenciais',
+					items: [
+						{ label: 'Introdução aos Hooks', link: '/2-hooks/1-introducao-aos-hooks/' },
+						{ label: 'useState: Adicionando Estado', link: '/2-hooks/2-usestate/' },
+						{ label: 'useEffect: Efeitos Colaterais', link: '/2-hooks/3-useeffect/' },
+						{ label: 'useContext: Dados Globais', link: '/2-hooks/4-usecontext/' },
+						{ label: 'useMemo e useCallback: Otimização', link: '/2-hooks/5-usememo-e-usecallback/' },
+						{ label: 'useRef: Acessando o DOM e Mais', link: '/2-hooks/6-useref/' },
+						{ label: 'As Regras dos Hooks', link: '/2-hooks/7-regras-dos-hooks/' },
+						{ label: 'Custom Hooks: Lógica Reutilizável', link: '/2-hooks/8-custom-hooks/' },
+					]
+				},
 			],
 		}),
 	],
