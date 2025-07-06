@@ -1,0 +1,122 @@
+---
+title: 'useState: Adicionando Estado'
+description: 'Aprenda a usar o Hook useState para adicionar estado local a componentes de função, tornando-os dinâmicos e interativos.'
+---
+
+import { Aside, Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+O `useState` é o primeiro e mais fundamental Hook que você aprenderá. Sua única finalidade é permitir que componentes de função "lembrem" de informações entre as renderizações. Em outras palavras, ele **adiciona estado** a um componente.
+
+Sempre que você precisar de uma variável que, ao ser alterada, deve fazer com que o componente se atualize na tela, você precisa do `useState`.
+
+## A Sintaxe do `useState`
+
+Para usar o `useState`, você o chama no nível superior do seu componente. Ele retorna um array com exatamente dois elementos, que geralmente desestruturamos imediatamente.
+
+```jsx
+import { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  // ...
+}
+```
+
+Vamos quebrar essa linha:
+
+<CardGrid>
+	<Card title="useState(0) 🧬">
+		A chamada da função `useState` com `0` como argumento. Este argumento é o **estado inicial** — o valor que a variável de estado terá na primeira renderização.
+	</Card>
+	<Card title="count 🔢">
+		O primeiro elemento do array retornado. É a sua **variável de estado**. Ela contém o valor atual do estado (`0` na primeira renderização, `1` após o primeiro clique, e assim por diante). Você a usa para ler o estado.
+	</Card>
+    <Card title="setCount 🎯">
+		O segundo elemento do array. É a **função de atualização**. Você a chama para mudar o valor de `count` e para "avisar" ao React que ele precisa re-renderizar o componente.
+	</Card>
+</CardGrid>
+
+<Aside type="tip">
+Usar a desestruturação de array `[valor, setValor]` é uma convenção. A vantagem é que podemos nomear nossas variáveis de estado como quisermos, o que é útil quando temos múltiplos estados em um mesmo componente.
+</Aside>
+
+## A Regra de Ouro: Imutabilidade
+
+A regra mais importante ao trabalhar com estado em React é: **nunca modifique o estado diretamente**. Sempre use a função de atualização fornecida pelo `useState`.
+
+O React depende da mudança de referência da variável de estado para saber que precisa re-renderizar. Se você mutar o estado diretamente, o React não perceberá a mudança e sua UI não será atualizada.
+
+<Tabs>
+<TabItem label="❌ Não faça isso">
+```jsx
+// ERRADO! Isso não vai re-renderizar o componente.
+function BrokenCounter() {
+  let [count, setCount] = useState(0);
+
+  function handleClick() {
+    count = count + 1; // MUTAÇÃO DIRETA
+    console.log(count); // O console mostrará o valor atualizado, mas a tela não.
+  }
+
+  return <button onClick={handleClick}>Contador Quebrado: {count}</button>;
+}
+```
+</TabItem>
+<TabItem label="✅ Faça isso">
+```jsx
+// CORRETO! Usa a função de atualização.
+function WorkingCounter() {
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1); // Avisa ao React para atualizar o estado e re-renderizar.
+  }
+
+  return <button onClick={handleClick}>Contador Funcional: {count}</button>;
+}
+```
+</TabItem>
+</Tabs>
+
+## Atualizando Estado com Objetos e Arrays
+
+A regra da imutabilidade é especialmente importante com objetos e arrays. Você deve sempre criar um **novo** objeto ou array ao atualizar o estado, em vez de modificar o existente. A sintaxe de "spread" (`...`) é sua melhor amiga aqui.
+
+```jsx
+function UserProfile() {
+  const [user, setUser] = useState({ name: 'Ana', age: 25 });
+
+  function handleBirthday() {
+    // Cria um NOVO objeto, copiando as propriedades antigas
+    // e sobrescrevendo a propriedade 'age'.
+    setUser({ ...user, age: user.age + 1 });
+  }
+
+  return (
+    <div>
+      <p>{user.name}, {user.age} anos</p>
+      <button onClick={handleBirthday}>Fazer Aniversário</button>
+    </div>
+  );
+}
+```
+
+## Atualizações a Partir do Estado Anterior
+
+E se você precisar atualizar o estado com base em seu valor anterior? A abordagem `setCount(count + 1)` geralmente funciona, mas pode falhar em alguns casos específicos (como em atualizações muito rápidas e em lote).
+
+A forma mais segura é passar uma **função** para a sua função de atualização. Essa função receberá o estado pendente (o valor mais recente) como argumento e deve retornar o novo estado.
+
+```jsx
+// Forma segura de incrementar
+setCount(prevCount => prevCount + 1);
+
+// Forma segura de adicionar um item a um array
+setItems(prevItems => [...prevItems, newItem]);
+```
+
+Isso garante que você está sempre trabalhando com o valor mais atualizado do estado, evitando "race conditions".
+
+---
+
+Agora que nossos componentes têm "memória" e podem mudar, como fazemos para que eles interajam com o mundo exterior — como buscar dados de uma API ou manipular o DOM? Para isso, usaremos o Hook de efeitos colaterais: **`useEffect`**.
