@@ -7,7 +7,7 @@ export default defineConfig({
 	// Added Configuration for 
 	// Deployment to GitHub Pages
 	site: 'https://AllanSilva29.github.io',
-	base: '/astro-starlight-ghpages',
+	base: '/front-end-docs-1',
 
 	integrations: [
 		starlight({
@@ -34,7 +34,7 @@ export default defineConfig({
 
 			title: 'Guia Front-End',
 			social: {
-				github: 'https://github.com/AllanSilva29/astro-starlight-ghpages',
+				github: 'https://github.com/AllanSilva29/front-end-docs-1',
 			},
 			sidebar: [
 				{
