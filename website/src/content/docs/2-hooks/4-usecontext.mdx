@@ -1,0 +1,110 @@
+---
+title: 'useContext: Dados Globais'
+description: 'Aprenda a usar o Hook useContext para compartilhar dados entre componentes distantes sem a necessidade de "prop drilling".'
+---
+
+import { Aside, Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Em uma aplicação React, os dados geralmente fluem de cima para baixo, de componentes pais para filhos, através de `props`. Mas o que acontece quando um componente profundamente aninhado precisa de um dado que está no topo da árvore de componentes?
+
+### O Problema: Prop Drilling
+
+Passar `props` manualmente através de vários níveis de componentes intermediários que não precisam desses dados é uma prática chamada **"prop drilling"**.
+
+
+
+O prop drilling torna o código mais verboso, difícil de manter e acopla componentes que não deveriam ter conhecimento um do outro.
+
+### A Solução: Context API e `useContext`
+
+O React oferece uma solução nativa para esse problema: a **Context API**. Ela permite criar um "túnel" de dados que pode ser acessado por qualquer componente dentro de sua árvore, não importa quão profundo ele esteja.
+
+O processo envolve três passos:
+
+<CardGrid>
+	<Card title="1. Criar o Contexto 🛠️">
+		Usamos a função `createContext` para criar um objeto de contexto. Podemos fornecer um valor padrão, que será usado se um componente tentar consumir o contexto sem um provedor acima dele.
+	</Card>
+	<Card title="2. Prover o Contexto 📦">
+		Envolvemos uma parte da nossa árvore de componentes com o `Context.Provider`. O `Provider` aceita uma `prop` `value`, que são os dados que queremos compartilhar.
+	</Card>
+    <Card title="3. Consumir o Contexto 🍽️">
+		Qualquer componente filho dentro do `Provider` pode agora acessar o valor do contexto usando o Hook `useContext`.
+	</Card>
+</CardGrid>
+
+## Exemplo Prático: Um Provedor de Tema
+
+Vamos criar um sistema simples de tema (Dark/Light Mode) para ilustrar o conceito.
+
+<Tabs>
+<TabItem label="1. theme-context.js">
+```jsx
+import { createContext } from 'react';
+
+// 1. Criamos o contexto. 'light' é o valor padrão.
+export const ThemeContext = createContext('light'); 
+```
+</TabItem>
+<TabItem label="2. App.jsx (Provedor)">
+```jsx
+import { useState } from 'react';
+import { ThemeContext } from './theme-context';
+import Toolbar from './Toolbar';
+
+function App() {
+  const [theme, setTheme] = useState('light');
+
+  const toggleTheme = () => {
+    setTheme(currentTheme => (currentTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  // 2. Envolvemos os componentes com o Provider, passando o tema atual
+  //    e a função para trocá-lo como 'value'.
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <Toolbar />
+      <button onClick={toggleTheme}>Trocar Tema</button>
+    </ThemeContext.Provider>
+  );
+}
+```
+</TabItem>
+<TabItem label="3. ThemedButton.jsx (Consumidor)">
+```jsx
+import { useContext } from 'react';
+import { ThemeContext } from './theme-context';
+
+function ThemedButton() {
+  // 3. Usamos o Hook useContext para ler o valor do contexto.
+  const { theme } = useContext(ThemeContext);
+
+  const style = {
+    background: theme === 'dark' ? '#333' : '#FFF',
+    color: theme === 'dark' ? '#FFF' : '#333',
+    border: '1px solid',
+    padding: '8px',
+  };
+
+  return <button style={style}>Botão com Tema</button>;
+}
+
+// Imagine que ThemedButton está dentro de um componente Toolbar,
+// que está dentro de App. Ele acessa o tema sem prop drilling!
+```
+</TabItem>
+</Tabs>
+
+## Aviso de Performance
+
+O `useContext` é uma ferramenta poderosa, mas tem uma desvantagem importante: quando o valor de um `Provider` muda, **todos os componentes que consomem esse contexto com `useContext` serão re-renderizados**, mesmo que a parte específica do valor que eles usam não tenha mudado.
+
+<Aside type="caution" title="Use com Moderação">
+O Context API é ideal para dados de **baixa frequência de atualização**, como informações de autenticação, tema ou idioma. Para estados complexos e que mudam com frequência, bibliotecas de gerenciamento de estado dedicadas (como Zustand ou Redux) podem oferecer um controle de performance mais granular.
+</Aside>
+
+Uma forma de mitigar isso é dividir contextos grandes em contextos menores e mais específicos. Assim, os componentes só se inscrevem nas atualizações que realmente lhes interessam.
+
+---
+
+Com o `useContext`, resolvemos o compartilhamento de dados. Mas e a performance? Vamos agora explorar os Hooks de otimização: **`useMemo` e `useCallback`**.
