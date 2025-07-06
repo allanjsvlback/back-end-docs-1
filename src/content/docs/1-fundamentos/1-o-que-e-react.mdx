@@ -1,0 +1,55 @@
+---
+title: '1. O que é React?'
+description: 'Entenda o que é o React, sua principal finalidade e por que ele é classificado como uma biblioteca, não um framework.'
+---
+
+React é uma biblioteca JavaScript de código aberto, mantida pelo Meta (antigo Facebook), usada para construir interfaces de usuário (UIs) interativas e dinâmicas. Ele é especialmente popular para o desenvolvimento de **Aplicações de Página Única (Single Page Applications - SPAs)**.
+
+Seu principal objetivo é permitir que desenvolvedores criem UIs complexas a partir de pequenas peças isoladas e reutilizáveis de código, chamadas de **componentes**.
+
+## A Distinção Chave: Biblioteca vs. Framework
+
+Uma das primeiras coisas a se entender sobre React é por que o chamamos de "biblioteca" e não de "framework". A diferença está no **controle**.
+
+-   Uma **Biblioteca** (como o React) é uma coleção de funcionalidades que **você chama** no seu código. Você está no comando e decide quando e onde usar os recursos da biblioteca. Ela é como uma caixa de ferramentas: você pega a ferramenta que precisa para resolver um problema específico.
+
+-   Um **Framework** (como o Angular) é uma estrutura que **chama o seu código**. Ele dita a arquitetura da aplicação e impõe um conjunto de regras. Ele é como a planta de uma casa: você preenche os espaços vazios com sua lógica, mas a estrutura já foi definida pelo framework.
+
+O React se concentra em uma única coisa e a faz muito bem: a **camada de visualização (a View)** da sua aplicação. Ele não impõe como você deve lidar com roteamento, gerenciamento de estado global ou chamadas de API. Essa flexibilidade permite que as equipes escolham as melhores ferramentas para cada necessidade do projeto.
+
+## Por que Escolher React?
+
+Além da flexibilidade, existem dois conceitos centrais que tornam o React tão poderoso:
+
+### 1. Abordagem Declarativa
+
+Com React, você descreve **o que** quer ver na tela em um determinado estado, e o React se encarrega de **como** atualizar o DOM de forma eficiente para que a UI reflita esse estado.
+
+Isso é o oposto da abordagem **imperativa**, comum em JavaScript puro, onde você precisa dar um passo a passo detalhado de como manipular o DOM.
+
+**Exemplo Imperativo (JavaScript Puro):**
+```javascript
+// Passo a passo de como fazer a mudança
+const container = document.getElementById('app');
+const heading = document.createElement('h1');
+heading.textContent = 'Olá, Mundo!';
+container.appendChild(heading);
+```
+
+**Exemplo Declarativo (React):**
+```jsx
+// Apenas descrevemos o que queremos no final
+function App() {
+  return <h1>Olá, Mundo!</h1>;
+}
+```
+Essa abstração torna o código mais previsível e fácil de depurar.
+
+### 2. Arquitetura Baseada em Componentes
+
+React te encoraja a quebrar UIs complexas em pedaços menores, independentes e reutilizáveis, chamados **componentes**. Pense neles como blocos de LEGO. Você pode criar um componente `Button`, um `UserProfileCard` ou um `SearchBar` e depois compô-los para montar uma página inteira.
+
+Isso traz enormes benefícios:
+-   **Reutilização:** Use o mesmo componente `Button` em vários lugares.
+-   **Manutenção:** Se precisar corrigir um bug no card do usuário, você mexe apenas no componente `UserProfileCard`.
+-   **Testabilidade:** Componentes isolados são muito mais fáceis de testar.

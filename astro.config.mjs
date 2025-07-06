@@ -6,19 +6,19 @@ import starlight from '@astrojs/starlight';
 export default defineConfig({
 	integrations: [
 		starlight({
-			title: 'My Docs',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' }],
+			title: 'Guia Front-End',
 			sidebar: [
 				{
-					label: 'Guides',
+					label: 'Fundamentos do React',
 					items: [
-						// Each item here is one entry in the navigation menu.
-						{ label: 'Example Guide', slug: 'guides/example' },
+						{ label: 'O que é React?', link: '/1-fundamentos/1-o-que-e-react/' },
+						{ label: 'JSX: A Sintaxe do React', link: '/1-fundamentos/2-jsx-a-sintaxe-do-react/' },
+						{ label: 'Componentes: Os Blocos de Construção', link: '/1-fundamentos/3-componentes-os-blocos-de-construcao/' },
+						{ label: 'Props vs. State', link: '/1-fundamentos/4-props-vs-state/' },
+						{ label: 'O Virtual DOM', link: '/1-fundamentos/5-o-virtual-dom/' },
+						{ label: 'A Importância das Keys', link: '/1-fundamentos/6-a-importancia-das-keys/' },
+						{ label: 'Renderização Condicional', link: '/1-fundamentos/7-renderizacao-condicional/' },
 					],
-				},
-				{
-					label: 'Reference',
-					autogenerate: { directory: 'reference' },
 				},
 			],
 		}),

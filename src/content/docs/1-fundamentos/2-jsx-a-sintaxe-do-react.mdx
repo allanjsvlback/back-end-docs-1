@@ -1,0 +1,85 @@
+---
+title: 'JSX: A Sintaxe do React'
+description: 'Entenda o que é JSX, por que ele é uma parte essencial do desenvolvimento com React e como ele é transformado em JavaScript puro.'
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+Ao começar a explorar o código React, a primeira coisa que chama a atenção é uma sintaxe que parece uma mistura de HTML com JavaScript. Essa sintaxe é o **JSX**, ou JavaScript XML.
+
+JSX é uma extensão de sintaxe para JavaScript que permite escrever uma estrutura semelhante à de uma árvore de elementos (como HTML) diretamente em seu código. Embora não seja obrigatório usar JSX com React, ele é a abordagem recomendada por tornar o código mais legível e a criação de componentes mais intuitiva.
+
+```jsx
+// Isto é JSX
+const elemento = <h1>Olá, Mundo!</h1>;
+```
+
+## Vantagens do JSX
+
+Usar JSX traz três benefícios principais para o desenvolvimento com React.
+
+<CardGrid>
+	<Card title="Legibilidade e Intuição">
+		É muito mais fácil visualizar a estrutura da sua UI quando ela é escrita em um formato que lembra HTML. Isso torna o código mais limpo e fácil de entender, especialmente para componentes complexos.
+	</Card>
+	<Card title="Poder do JavaScript">
+		Com JSX, você pode embutir qualquer expressão JavaScript diretamente na sua marcação usando chaves `{}`. Isso permite criar UIs dinâmicas de forma poderosa, renderizando dados de variáveis, executando funções ou aplicando lógica condicional.
+	</Card>
+	<Card title="Segurança">
+		Por padrão, o React DOM "escapa" (converte para string) qualquer valor embutido no JSX antes de renderizá-lo. Isso ajuda a prevenir ataques de injeção de código (XSS - Cross-Site Scripting), uma vulnerabilidade de segurança comum em aplicações web.
+	</Card>
+</CardGrid>
+
+### Exemplo de JavaScript embutido no JSX:
+
+```jsx
+const user = {
+  name: "Ana",
+  avatarUrl: "https://i.imgur.com/yXOvdOSs.jpg"
+};
+
+function UserProfile() {
+  return (
+    <div className="profile">
+      <h2>{user.name}</h2>
+      <img
+        className="avatar"
+        src={user.avatarUrl}
+        alt={'Foto de ' + user.name}
+      />
+    </div>
+  );
+}
+```
+Note como usamos `{user.name}` para exibir o nome e `src={user.avatarUrl}` para definir o atributo da imagem dinamicamente.
+
+<Aside>
+Em JSX, atributos HTML como `class` e `for` são escritos como `className` e `htmlFor`, respectivamente. Isso ocorre porque `class` e `for` são palavras reservadas em JavaScript.
+</Aside>
+
+## "Por Baixo dos Panos": A Transpilação
+
+Os navegadores não entendem JSX nativamente. Para que o código funcione, ele precisa ser convertido para JavaScript puro. Esse processo é chamado de **transpilação** e é realizado por uma ferramenta como o **Babel**.
+
+O Babel pega o código JSX e o transforma em chamadas da função `React.createElement()`.
+
+O código JSX a seguir:
+```jsx
+const element = <h1 className="title">Olá, Mundo!</h1>;
+```
+
+É transpilado para este JavaScript:
+```javascript
+const element = React.createElement(
+  'h1',
+  { className: 'title' },
+  'Olá, Mundo!'
+);
+```
+A função `React.createElement()` cria um objeto que o React usa para descrever o que deve ser renderizado no DOM. Entender essa transformação é fundamental para compreender como o React realmente funciona.
+
+---
+
+Com o JSX em mãos, agora podemos focar nos blocos de construção essenciais de qualquer aplicação React: os **Componentes**.
+
+
