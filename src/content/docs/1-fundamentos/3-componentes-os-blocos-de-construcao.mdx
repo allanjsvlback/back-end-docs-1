@@ -1,0 +1,72 @@
+---
+title: 'Componentes: Os Blocos de Construção'
+description: 'Aprenda sobre componentes, a unidade fundamental de código em React, e as diferenças entre Componentes de Função e Componentes de Classe.'
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+No coração do React está a ideia de **componentes**. Pense neles como blocos de construção independentes e reutilizáveis para a sua interface de usuário. Assim como você usa blocos de LEGO para construir estruturas complexas, você usa componentes para construir UIs complexas.
+
+Cada componente encapsula sua própria:
+- **Estrutura (Markup):** Escrita em JSX.
+- **Lógica (Logic):** Como o componente se comporta.
+- **Estilo (Styling):** A aparência do componente.
+
+Isso permite que você crie partes da UI, como um botão, um formulário de busca ou um card de produto, e as reutilize em diferentes partes da sua aplicação ou até mesmo em outros projetos.
+
+## Componentes de Função: A Abordagem Moderna
+
+A maneira mais comum e recomendada de criar componentes hoje é através de **funções JavaScript**. Um componente de função é, em sua forma mais simples, uma função que recebe um objeto de `props` (propriedades) e retorna um elemento React (geralmente escrito em JSX).
+
+```jsx
+// Um componente de função simples que renderiza uma mensagem de boas-vindas.
+function WelcomeMessage(props) {
+  return <h1>Olá, {props.name}!</h1>;
+}
+
+// Como usar o componente em outro lugar:
+function App() {
+  return (
+    <div>
+      <WelcomeMessage name="Maria" />
+      <WelcomeMessage name="João" />
+    </div>
+  );
+}
+```
+
+Com a introdução dos **Hooks** (que veremos em detalhes mais adiante), os componentes de função podem agora gerenciar seu próprio estado e lidar com efeitos colaterais, tornando-os tão poderosos quanto os componentes de classe, mas com uma sintaxe muito mais limpa e concisa.
+
+## Componentes de Classe: A Abordagem Clássica
+
+Antes dos Hooks, a única maneira de um componente ter estado interno ou acesso a métodos de ciclo de vida era usando a sintaxe de **classes do ES6**. Um componente de classe deve estender `React.Component` e implementar um método `render()` que retorna JSX.
+
+```jsx
+import React from 'react';
+
+// O mesmo componente WelcomeMessage, escrito como uma classe.
+class WelcomeMessage extends React.Component {
+  render() {
+    return <h1>Olá, {this.props.name}!</h1>;
+  }
+}
+```
+
+<Aside type="caution" title="Abordagem Legada">
+Embora você ainda encontre componentes de classe em projetos mais antigos ou em documentações, a comunidade React e a equipe oficial recomendam o uso de **componentes de função com Hooks** para novos desenvolvimentos.
+</Aside>
+
+## Por que a Preferência por Componentes de Função?
+
+A mudança da comunidade para componentes de função não é apenas uma questão de estilo. Existem razões técnicas concretas:
+
+1.  **Menos "Boilerplate":** O código é mais curto e direto. Não há necessidade de `constructor`, `this` ou `bind` de métodos.
+2.  **Lógica Reutilizável:** Hooks permitem extrair e compartilhar lógica com estado (como `useState` e `useEffect`) entre componentes de uma forma muito mais simples e elegante do que os padrões antigos usados com classes (como Higher-Order Components e Render Props).
+3.  **Simplicidade do `this`:** A palavra-chave `this` em JavaScript é uma fonte comum de confusão e bugs. Componentes de função com Hooks eliminam completamente essa complexidade.
+4.  **Otimizações Futuras:** A equipe do React indicou que componentes de função são mais fáceis de otimizar em futuras atualizações da biblioteca.
+
+Entender componentes de classe ainda é útil para dar manutenção em código legado, mas para construir aplicações modernas, os componentes de função são o caminho a seguir.
+
+---
+
+Agora que sabemos como criar componentes e a diferença entre as abordagens, o próximo passo é entender como os dados fluem através deles. Vamos explorar os conceitos de **Props vs. State**.
