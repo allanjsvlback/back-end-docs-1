@@ -14,13 +14,13 @@ Para entender por que os Hooks são tão importantes, é útil olhar para o mund
 Anteriormente, a lógica e o estado de um componente estavam fortemente ligados à sua estrutura de classe. Isso trazia alguns desafios significativos:
 
 <CardGrid>
-	<Card title="Componentes de Classe Gigantes">
+	<Card title="Componentes de Classe Gigantes 🧱">
 		Componentes complexos frequentemente se tornavam arquivos enormes e difíceis de manter. Lógicas relacionadas (como buscar dados e se inscrever em eventos) ficavam espalhadas por diferentes métodos de ciclo de vida (`componentDidMount`, `componentDidUpdate`, `componentWillUnmount`).
 	</Card>
-	<Card title="Lógica Difícil de Reutilizar">
+	<Card title="Lógica Difícil de Reutilizar 🧩🚫">
 		Reutilizar lógica com estado entre componentes era complicado. Padrões como **Higher-Order Components (HOCs)** e **Render Props** foram criados para resolver isso, mas eles introduziam aninhamento excessivo de componentes (o "wrapper hell") e tornavam o código mais difícil de seguir.
 	</Card>
-    <Card title="A Complexidade do `this`">
+    <Card title="A Complexidade do `this` 🌀">
 		Componentes de classe exigiam o uso da palavra-chave `this`, uma fonte comum de confusão em JavaScript. Era necessário fazer o `bind` de métodos no construtor, um passo extra que frequentemente era esquecido.
 	</Card>
 </CardGrid>

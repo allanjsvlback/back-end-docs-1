@@ -24,19 +24,19 @@ O Virtual DOM é apenas um objeto JavaScript que representa a estrutura do DOM r
 O verdadeiro poder do Virtual DOM aparece quando o estado de um componente muda. É aí que entra o processo de **Reconciliação**.
 
 <CardGrid>
-	<Card title="1. Mudança de Estado" icon="document">
+	<Card title=" 🔄 1. Mudança de Estado">
 		Tudo começa quando o estado de um componente é atualizado (por exemplo, via `setState`).
 	</Card>
-	<Card title="2. Nova Árvore Virtual" icon="seti:html">
+	<Card title="🌳✨ 2. Nova Árvore Virtual">
 		O React cria uma **nova** árvore do Virtual DOM que representa como a UI deve ficar *após* a mudança.
 	</Card>
-	<Card title="3. Diffing (Comparação)" icon="magnifier">
+	<Card title="🧮 3. Diffing (Comparação)">
 		O React então compara a nova árvore do VDOM com a versão anterior (a que está em memória). Esse processo de comparação é chamado de **"diffing"**.
 	</Card>
-	<Card title="4. Atualização Mínima" icon="seti:yml">
+	<Card title="🩹 4. Atualização Mínima">
 		Após a comparação, o React sabe exatamente quais partes da UI mudaram. Ele calcula o conjunto **mínimo** de operações necessárias para fazer o DOM real corresponder à nova árvore do VDOM.
 	</Card>
-    <Card title="5. Batching (Agrupamento)" icon="seti:default">
+    <Card title="📚 5. Batching (Agrupamento)">
 		Em vez de aplicar cada mudança uma por uma, o React agrupa (batches) todas as atualizações e as aplica no DOM real de uma só vez, em um único ciclo. Isso minimiza os custosos "reflows" e "repaints".
 	</Card>
 </CardGrid>
