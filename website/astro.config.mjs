@@ -38,14 +38,14 @@ export default defineConfig({
 			},
 			sidebar: [
 				{
-					label: 'Guides',
+					label: 'Guias',
 					items: [
 						// Each item here is one entry in the navigation menu.
-						{ label: 'Example Guide', link: 'guides/example/' },
+						{ label: 'Exemplo de Guia', link: 'guides/example/' },
 					],
 				},
 				{
-					label: 'Reference',
+					label: 'Referência',
 					autogenerate: { directory: 'reference' },
 				},
 				{

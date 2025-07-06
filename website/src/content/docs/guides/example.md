@@ -1,11 +1,11 @@
 ---
-title: Example Guide
-description: A guide in my new Starlight docs site.
+title: Exemplo de Guia
+description: Um guia no meu novo site de documentação com Starlight.
 ---
 
-Guides lead a user through a specific task they want to accomplish, often with a sequence of steps.
-Writing a good guide requires thinking about what your users are trying to do.
+Guias conduzem o usuário por uma tarefa específica que ele deseja realizar, geralmente por meio de uma sequência de etapas.  
+Escrever um bom guia exige pensar no que seus usuários estão tentando fazer.
 
-## Further reading
+## Leitura adicional
 
-- Read [about how-to guides](https://diataxis.fr/how-to-guides/) in the Diátaxis framework
+- Leia [sobre guias passo a passo](https://diataxis.fr/how-to-guides/) no framework Diátaxis
