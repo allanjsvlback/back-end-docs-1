@@ -6,8 +6,8 @@ export default defineConfig({
 
 	// Added Configuration for 
 	// Deployment to GitHub Pages
-	site: 'https://AllanSilva29.github.io',
-	base: '/front-end-docs-1',
+	site: 'https://allanjsvlback.github.io',
+	base: '/back-end-docs-1',
 
 	integrations: [
 		starlight({
@@ -32,9 +32,9 @@ export default defineConfig({
 				*/
 			],
 
-			title: 'Guia Front-End',
+			title: 'Guia Back-End',
 			social: {
-				github: 'https://github.com/AllanSilva29/front-end-docs-1',
+				github: 'https://github.com/allanjsvlback/back-end-docs-1',
 			},
 			sidebar: [
 				{
@@ -49,39 +49,23 @@ export default defineConfig({
 					autogenerate: { directory: 'reference' },
 				},
 				{
-					label: 'Fundamentos do React',
+					label: 'Começando com Nest.js',
 					items: [
-						{ label: 'O que é React?', link: '1-fundamentos/1-o-que-e-react/' },
-						{ label: 'JSX: A Sintaxe do React', link: '1-fundamentos/2-jsx-a-sintaxe-do-react/' },
-						{ label: 'Componentes: Os Blocos de Construção', link: '1-fundamentos/3-componentes-os-blocos-de-construcao/' },
-						{ label: 'Props vs. State', link: '1-fundamentos/4-props-vs-state/' },
-						{ label: 'O Virtual DOM', link: '1-fundamentos/5-o-virtual-dom/' },
-						{ label: 'A Importância das Keys', link: '1-fundamentos/6-a-importancia-das-keys/' },
-						{ label: 'Renderização Condicional', link: '1-fundamentos/7-renderizacao-condicional/' },
+						{ label: 'O que é Nest.js e por que usar?', link: '1-comecando-com-nest-js/1-o-que-e-nest' },
+						{ label: 'Instalação e Primeiro Projeto', link: '1-comecando-com-nest-js/2-instalacao-e-primeiro-projeto' },
+						{ label: 'Estrutura de Pastas e Arquivos', link: '1-comecando-com-nest-js/3-estrutura-de-pastas' },
+						{ label: 'Executando sua Aplicação', link: '1-comecando-com-nest-js/4-executando-a-aplicacao' },
 					],
 				},
 				{
-					label: 'Hooks Essenciais',
+					label: 'Arquitetura e Conceitos Core',
 					items: [
-						{ label: 'Introdução aos Hooks', link: '2-hooks/1-introducao-aos-hooks/' },
-						{ label: 'useState: Adicionando Estado', link: '2-hooks/2-usestate/' },
-						{ label: 'useEffect: Efeitos Colaterais', link: '2-hooks/3-useeffect/' },
-						{ label: 'useContext: Dados Globais', link: '2-hooks/4-usecontext/' },
-						{ label: 'useMemo e useCallback: Otimização', link: '2-hooks/5-usememo-e-usecallback/' },
-						{ label: 'useRef: Acessando o DOM e Mais', link: '2-hooks/6-useref/' },
-						{ label: 'As Regras dos Hooks', link: '2-hooks/7-regras-dos-hooks/' },
-						{ label: 'Custom Hooks: Lógica Reutilizável', link: '2-hooks/8-custom-hooks/' },
-					]
-				},
-				{
-					label: 'Arquitetura de Projetos',
-					items: [
-					  { label: 'Estruturas de Pastas', link: '3-arquitetura/1-estruturas-de-pastas/' },
-					  { label: 'Roteamento em React', link: '3-arquitetura/2-roteamento-em-react/' },
-					  { label: 'Layouts e Páginas', link: '3-arquitetura/3-layouts-e-paginas/' },
-					  { label: 'Importações Absolutas', link: '3-arquitetura/4-importacoes-absolutas/' },
-					  { label: 'Comunicação entre Componentes', link: '3-arquitetura/5-comunicacao-entre-componentes/' },
-					]
+						{ label: 'Os 3 Pilares: Módulos, Controllers e Providers', link: '2-arquitetura-e-conceitos/1-os-tres-pilares' },
+						{ label: 'Controllers: Lidando com Requisições', link: '2-arquitetura-e-conceitos/2-controllers-e-rotas' },
+						{ label: 'Providers e Services: A Lógica de Negócio', link: '2-arquitetura-e-conceitos/3-providers-e-services' },
+						{ label: 'Módulos: Organizando sua Aplicação', link: '2-arquitetura-e-conceitos/4-modulos-e-organizacao' },
+						{ label: 'O Fluxo de uma Requisição (Lifecycle)', link: '2-arquitetura-e-conceitos/5-request-lifecycle' },
+					],
 				},
 			],
 		}),
