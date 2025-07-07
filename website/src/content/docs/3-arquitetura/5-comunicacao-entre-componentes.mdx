@@ -15,7 +15,7 @@ Vamos revisar os quatro principais padrões de comunicação.
 
 Este é o padrão mais básico e comum. Um componente pai passa dados para um componente filho através de `props`. O filho recebe esses dados e os utiliza para renderizar sua UI.
 
-<Card title="Como funciona" icon="arrow-down">
+<Card title="⬇️ Como funciona">
 ```jsx
 function Parent() {
   const userName = "Alice";
@@ -35,7 +35,7 @@ Mas e se um filho precisar comunicar algo de volta para o pai, como um clique de
 
 A solução é o pai passar uma **função de callback** para o filho via `props`. O filho, então, chama essa função quando um evento ocorre, passando dados como argumento se necessário.
 
-<Card title="Como funciona" icon="arrow-up">
+<Card title="⬆️ Como funciona">
 ```jsx
 function Parent() {
   const [inputValue, setInputValue] = useState('');
@@ -72,7 +72,7 @@ Dois componentes irmãos não podem se comunicar diretamente. Se o `ComponenteA`
 
 A ideia é mover o estado compartilhado para o **ancestral comum mais próximo** dos componentes irmãos. Esse ancestral então gerencia o estado e o distribui para os filhos via `props` (Padrão 1) e recebe atualizações via callbacks (Padrão 2).
 
-<Card title="Como funciona" icon="users">
+<Card title="👥 Como funciona">
 ```jsx
 // O ancestral comum (App) gerencia o estado.
 function App() {
@@ -101,7 +101,7 @@ function Button({ onClick }) {
 
 Quando o "Lifting State Up" se torna impraticável porque os componentes estão muito distantes na árvore (levando ao "prop drilling"), recorremos a soluções de estado global.
 
-<Card title="Como funciona" icon="tree-structure">
+<Card title="🌳 Como funciona">
 -   **`useContext`:** A solução nativa do React. Você cria um `Provider` no topo da árvore e qualquer componente filho pode "consumir" os dados diretamente, sem passá-los por `props`. Ideal para dados de baixa frequência de atualização.
 -   **Bibliotecas de Estado Global (Zustand, Redux):** Para estados complexos e de alta frequência, essas bibliotecas oferecem um "store" desacoplado da árvore de componentes. Qualquer componente pode se inscrever e reagir a mudanças no estado de forma otimizada.
 </Card>
@@ -109,8 +109,6 @@ Quando o "Lifting State Up" se torna impraticável porque os componentes estão 
 ## Fluxograma de Decisão
 
 <Aside type="note" title="Qual padrão usar?">
-
-_Um fluxograma visual pode ser inserido aqui para ilustrar o processo de decisão._
 
 1.  Os componentes têm uma relação pai-filho?
     -   **Sim:** Use `props` e callbacks.
