@@ -1,0 +1,93 @@
+---
+title: "Módulos: Organizando e Encapsulando sua Aplicação"
+description: "Descubra como os Módulos em Nest.js ajudam a estruturar sua aplicação em domínios lógicos, encapsular funcionalidades e compartilhar providers de forma segura."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Até agora, vimos como os `Controllers` lidam com as rotas e os `Providers` (Services) executam a lógica de negócio. Os **Módulos** são a cola que une essas peças. Eles são a principal ferramenta do Nest.js para organizar sua aplicação em domínios coesos e funcionais.
+
+Pense em módulos como "caixas" que contêm um conjunto de funcionalidades relacionadas. Por exemplo, em uma aplicação de e-commerce, você poderia ter um `ProductsModule`, um `OrdersModule` e um `UsersModule`.
+
+## A Estrutura de um Módulo
+
+Um módulo é uma classe TypeScript marcada com o decorator `@Module()`. Este decorator recebe um objeto que descreve o módulo:
+
+-   **`providers`**: O array de providers (ex: services) que pertencem a este módulo. Eles serão instanciados pelo injetor de dependência do Nest e podem ser injetados em outras classes *dentro deste mesmo módulo*.
+-   **`controllers`**: O array de controllers que devem ser instanciados para este módulo.
+-   **`imports`**: O array de outros módulos que este módulo precisa para funcionar. Ao importar um módulo, você ganha acesso aos `providers` que ele **exporta**.
+-   **`exports`**: O array de providers deste módulo que devem ficar disponíveis para outros módulos que o importarem. É a "interface pública" do seu módulo.
+
+```typescript
+// Exemplo de um UsersModule
+// src/users/users.module.ts
+import { Module } from '@nestjs/common';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+
+@Module({
+  controllers: [UsersController],
+  providers: [UsersService],
+  // Por enquanto, UsersService só pode ser usado dentro do UsersModule
+})
+export class UsersModule {}
+```
+
+## Encapsulamento e Compartilhamento
+
+Por padrão, os módulos encapsulam fortemente seus providers. Isso significa que o `UsersService` do exemplo acima não pode ser injetado em um controller de outro módulo (por exemplo, `OrdersController`) diretamente.
+
+Para compartilhar um provider, você precisa seguir um processo de duas etapas:
+
+1. **Exportar o Provider**
+    No módulo que possui o provider (`UsersModule`), adicione o provider ao array `exports`.
+
+    ```typescript
+    // src/users/users.module.ts
+    import { Module } from '@nestjs/common';
+    import { UsersController } from './users.controller';
+    import { UsersService } from './users.service';
+
+    @Module({
+      controllers: [UsersController],
+      providers: [UsersService],
+      exports: [UsersService], // Agora UsersService é público
+    })
+    export class UsersModule {}
+    ```
+2. **Importar o Módulo**
+    No módulo que precisa do provider (vamos supor um `AppModule`), adicione o módulo exportador (`UsersModule`) ao array `imports`.
+
+    ```typescript
+    // src/app.module.ts
+    import { Module } from '@nestjs/common';
+    import { AppController } from './app.controller';
+    import { AppService } from './app.service';
+    import { UsersModule } from './users/users.module'; // 1. Importar o módulo
+
+    @Module({
+      imports: [UsersModule], // 2. Adicionar aos imports
+      controllers: [AppController],
+      providers: [AppService],
+    })
+    export class AppModule {}
+    ```
+
+Agora, qualquer controller ou service dentro do `AppModule` pode injetar o `UsersService` normalmente.
+
+<Aside type="caution" title="Importante!">
+Você importa **módulos**, não providers individuais. O `AppModule` não sabe da existência do `UsersService` diretamente; ele apenas sabe que o `UsersModule` fornece um conjunto de providers exportados.
+</Aside>
+
+## Módulos de Funcionalidade (Feature Modules)
+
+A prática recomendada é criar um módulo para cada "feature" ou domínio da sua aplicação. O `UsersModule` é um exemplo perfeito de um **Feature Module**.
+
+O `AppModule` atua como o **Módulo Raiz (Root Module)**, que é o ponto de partida usado pelo Nest para construir o grafo de dependências da aplicação. Ele geralmente serve para juntar todos os seus feature modules.
+
+Essa abordagem modular oferece vários benefícios:
+-   **Organização:** O código fica agrupado por domínio, facilitando a navegação e o entendimento.
+-   **Limites Claros:** Fica evidente quais partes da aplicação podem interagir umas com as outras.
+-   **Reutilização:** Um `ProductsModule` bem definido pode ser facilmente reutilizado em outra aplicação.
+-   **Lazy Loading:** Em aplicações maiores, os módulos permitem carregar funcionalidades sob demanda, melhorando o tempo de inicialização.
+

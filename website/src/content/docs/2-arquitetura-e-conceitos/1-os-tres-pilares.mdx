@@ -1,0 +1,94 @@
+---
+title: "Os 3 Pilares do Nest.js: Módulos, Controllers e Providers"
+description: "Entenda a função dos Módulos, Controllers e Providers, os três blocos de construção fundamentais que formam a arquitetura de qualquer aplicação Nest.js."
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Toda aplicação Nest.js é construída sobre três pilares arquitetônicos principais: **Módulos**, **Controllers** e **Providers**. Compreender a responsabilidade de cada um é o primeiro passo para dominar o framework e construir aplicações robustas e organizadas.
+
+Para facilitar o entendimento, vamos usar uma analogia com um restaurante.
+
+<CardGrid>
+    <Card title="🤵‍♂️ Controller: O Garçom">
+        O Controller é como o garçom do seu restaurante. Sua principal função é receber os pedidos dos clientes (as requisições HTTP) e entregar a comida (as respostas). Ele não cozinha, apenas faz a ponte entre o cliente e a cozinha.
+    </Card>
+    <Card title="👨‍🍳 Provider: O Chef">
+        O Provider, mais comumente um **Service**, é o chef na cozinha. Ele recebe o pedido do garçom e executa a lógica complexa: prepara os ingredientes, cozinha o prato e o entrega pronto. Ele contém a "lógica de negócio" da aplicação.
+    </Card>
+    <Card title="🍽️ Module: A Cozinha">
+        O Module é a própria cozinha (ou até mesmo o restaurante inteiro). Ele organiza o ambiente, garantindo que os garçons (Controllers) e os chefs (Providers) estejam disponíveis e saibam como trabalhar juntos. Cada cozinha pode ter sua especialidade (ex: `UsersModule`, `OrdersModule`).
+    </Card>
+</CardGrid>
+
+Agora, vamos formalizar esses conceitos.
+
+## Controllers: A Camada de Roteamento
+
+A principal responsabilidade de um **Controller** é receber as requisições que chegam à sua aplicação e retornar uma resposta ao cliente. Essencialmente, eles definem as rotas (endpoints) da sua API.
+
+-   **Decorators:** São marcados com o decorator `@Controller()`, que pode receber um prefixo de rota (ex: `@Controller('users')`).
+-   **Métodos:** Os métodos dentro de um Controller são mapeados para verbos HTTP específicos usando decorators como `@Get()`, `@Post()`, `@Delete()`, etc.
+-   **Foco:** Devem ser "magros" (thin). Sua tarefa é delegar a lógica de negócio complexa para os Providers (Services), e não executá-la diretamente.
+
+```typescript
+// Exemplo de um Controller
+import { Controller, Get, Param } from '@nestjs/common';
+import { UsersService } from './users.service';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    // Delega a busca para o service
+    return this.usersService.findOne(id);
+  }
+}
+```
+
+## Providers: A Camada de Lógica de Negócio
+
+Um **Provider** é uma classe que pode ser gerenciada pelo sistema de Injeção de Dependência do Nest.js. O tipo mais comum de Provider é o **Service**.
+
+-   **Decorators:** São marcados com o decorator `@Injectable()`, que sinaliza ao Nest que esta classe pode ser injetada em outras.
+-   **Responsabilidade:** Contêm a lógica de negócio da sua aplicação. Se você precisa se comunicar com um banco de dados, chamar outra API ou realizar um cálculo complexo, o lugar para isso é em um Service.
+-   **Outros Tipos:** Além de Services, Providers podem ser Repositories (para acesso a dados), Factories (para criar objetos complexos), ou qualquer outra classe que encapsule uma lógica reutilizável.
+
+```typescript
+// Exemplo de um Service
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class UsersService {
+  findOne(id: string) {
+    // Aqui estaria a lógica para buscar um usuário no banco de dados
+    return { id, name: 'John Doe', email: 'john.doe@example.com' };
+  }
+}
+```
+
+## Módulos: A Camada de Organização
+
+Um **Module** é uma classe com o decorator `@Module()` que organiza uma parte da sua aplicação. Ele agrupa um conjunto de Controllers, Providers e até mesmo outros Módulos relacionados a um domínio específico.
+
+-   **Encapsulamento:** Módulos encapsulam a funcionalidade. Por padrão, os Providers de um módulo são "privados" e só podem ser usados dentro daquele módulo.
+-   **Compartilhamento:** Para que um Provider possa ser usado por outro módulo, ele precisa ser explicitamente adicionado ao array `exports` do seu módulo. O módulo consumidor, por sua vez, deve adicioná-lo ao seu array `imports`.
+-   **Aplicação como um Grafo:** O Nest.js constrói um grafo de dependências a partir dos módulos da sua aplicação, começando pelo `AppModule` (o módulo raiz).
+
+```typescript
+// Exemplo de um Módulo
+import { Module } from '@nestjs/common';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+
+@Module({
+  controllers: [UsersController],
+  providers: [UsersService],
+  // exports: [UsersService] // Descomente para permitir que outros módulos usem UsersService
+})
+export class UsersModule {}
+```
+
+Nos próximos capítulos, vamos mergulhar fundo em cada um desses pilares, explorando como criar e conectar cada peça para construir uma aplicação Nest.js completa.

@@ -1,0 +1,122 @@
+---
+title: "Providers e Injeção de Dependência: A Lógica de Negócio"
+description: "Mergulhe no conceito de Providers e aprenda como o sistema de Injeção de Dependência do Nest.js promove um código desacoplado, testável e reutilizável."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Se os Controllers são os "garçons" que recebem os pedidos, os **Providers** são os "chefs" que preparam a comida. Eles são a espinha dorsal da sua aplicação, onde a lógica de negócio, o acesso a dados e outras tarefas complexas residem.
+
+O tipo mais comum de Provider é o **Service**.
+
+## O que é um Provider?
+
+No Nest.js, um Provider é qualquer classe marcada com o decorator `@Injectable()`. Este decorator informa ao Nest que a classe pode ser gerenciada pelo seu **contêiner de Inversão de Controle (IoC)**.
+
+Isso significa que o Nest se encarrega de criar uma instância (um objeto) dessa classe e "injetá-la" onde ela for necessária, como em um Controller ou em outro Provider. Esse processo é chamado de **Injeção de Dependência (DI)**.
+
+```typescript
+// src/users/users.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { User } from './entities/user.entity'; // Supondo uma entidade User
+
+@Injectable()
+export class UsersService {
+  // Em um app real, isso seria uma conexão com o banco de dados.
+  private readonly users: User[] = [
+    { id: 1, name: 'John Doe' },
+    { id: 2, name: 'Jane Smith' },
+  ];
+
+  findAll(): User[] {
+    return this.users;
+  }
+
+  findOne(id: number): User {
+    const user = this.users.find((user) => user.id === id);
+    if (!user) {
+      throw new NotFoundException(`User with ID "${id}" not found`);
+    }
+    return user;
+  }
+}
+```
+Este `UsersService` encapsula toda a lógica relacionada aos usuários. Ele não sabe nada sobre requisições HTTP; seu único trabalho é gerenciar usuários.
+
+## Injeção de Dependência em Ação
+
+A verdadeira força dos Providers é revelada quando os injetamos em outras classes. Vamos ver como um `UsersController` pode usar o `UsersService`.
+
+1.  **Declarar o Provider no Módulo:** Primeiro, você precisa registrar o `UsersService` no array `providers` do módulo correspondente (`UsersModule`). Isso permite que o Nest saiba que ele existe.
+
+    ```typescript
+    // src/users/users.module.ts
+    import { Module } from '@nestjs/common';
+    import { UsersController } from './users.controller';
+    import { UsersService } from './users.service';
+
+    @Module({
+      controllers: [UsersController],
+      providers: [UsersService], // Registrando o service
+    })
+    export class UsersModule {}
+    ```
+
+2.  **Injetar no Constructor:** Agora, você pode "solicitar" uma instância do `UsersService` no `constructor` do `UsersController`.
+
+    ```typescript
+    // src/users/users.controller.ts
+    import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+    import { UsersService } from './users.service';
+
+    @Controller('users')
+    export class UsersController {
+      // A mágica acontece aqui!
+      constructor(private readonly usersService: UsersService) {}
+
+      @Get()
+      findAll() {
+        return this.usersService.findAll();
+      }
+
+      @Get(':id')
+      findOne(@Param('id', ParseIntPipe) id: number) {
+        return this.usersService.findOne(id);
+      }
+    }
+    ```
+
+Quando o Nest.js cria a instância do `UsersController`, ele vê que o construtor precisa de um `UsersService`. Ele então procura por uma instância de `UsersService` no seu contêiner IoC e a "injeta" automaticamente.
+
+<Aside title="🔁 O que é Inversão de Controle (IoC)?">
+Sem IoC, a classe `UsersController` seria responsável por criar sua própria instância do `UsersService` (ex: `this.usersService = new UsersService()`). Com IoC, o **controle** sobre a criação de dependências é **invertido**: a classe não cria mais suas dependências, ela as recebe de uma força externa (o contêiner do Nest.js). A Injeção de Dependência é a forma como essa inversão é implementada.
+</Aside>
+
+## Vantagens da Injeção de Dependência
+
+Este padrão arquitetônico traz benefícios enormes:
+
+-   **Baixo Acoplamento:** O `UsersController` não precisa saber *como* criar um `UsersService` ou do que ele depende. Ele apenas sabe que existe um "contrato" (uma classe `UsersService`) que pode ser usado. Isso torna as classes mais independentes.
+
+-   **Testabilidade Aprimorada:** Ao escrever testes unitários para o `UsersController`, você pode facilmente fornecer uma versão "mock" (falsa) do `UsersService`. Isso permite testar o controller de forma isolada, sem precisar de um banco de dados real, por exemplo.
+
+-   **Reutilização de Código:** O mesmo `UsersService` pode ser injetado em qualquer outro Provider ou Controller que precise de lógica de usuário, sem duplicar código. Por padrão, o Nest.js cria uma **única instância (Singleton)** de cada provider e a compartilha por toda a aplicação.
+
+## Escopos de Provider (Avançado)
+
+Embora o padrão `Singleton` seja o mais comum, o Nest.js permite controlar o ciclo de vida de um provider com escopos:
+
+-   **`SINGLETON`** (padrão): Uma única instância é criada e compartilhada por toda a aplicação.
+-   **`REQUEST`**: Uma nova instância é criada para cada requisição recebida. Útil para armazenar dados específicos de uma requisição (ex: dados do usuário autenticado).
+-   **`TRANSIENT`**: Uma nova instância é criada toda vez que o provider é injetado.
+
+Você pode definir o escopo ao registrar o provider:
+```typescript
+{
+  provide: UsersService,
+  useClass: UsersService,
+  scope: Scope.REQUEST, // Exemplo de escopo de requisição
+}
+```
+
+Dominar Providers e a Injeção de Dependência é fundamental para escrever aplicações Nest.js limpas, escaláveis e fáceis de manter.

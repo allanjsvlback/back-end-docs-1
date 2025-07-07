@@ -1,0 +1,136 @@
+---
+title: "Controllers e Roteamento: Lidando com Requisições"
+description: "Aprenda a criar Controllers para definir as rotas da sua API, manipular diferentes métodos HTTP e extrair dados de requisições usando decorators."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Controllers são a porta de entrada da sua aplicação. Eles são responsáveis por mapear as requisições HTTP recebidas para a lógica específica que deve ser executada. Em Nest.js, um Controller é uma classe TypeScript marcada com o decorator `@Controller()`.
+
+## Definindo um Controller e Rotas
+
+O decorator `@Controller()` é fundamental. Ele aceita um argumento opcional que define um **prefixo de rota** para todos os endpoints definidos dentro daquela classe.
+
+Por exemplo, se usarmos `@Controller('posts')`, todas as rotas definidas neste controller serão prefixadas com `/posts`.
+
+```typescript
+// src/posts/posts.controller.ts
+import { Controller, Get, Post } from '@nestjs/common';
+
+@Controller('posts')
+export class PostsController {
+  
+  // Mapeado para: GET /posts
+  @Get()
+  findAll() {
+    return 'Este endpoint retorna todos os posts.';
+  }
+
+  // Mapeado para: POST /posts
+  @Post()
+  create() {
+    return 'Este endpoint cria um novo post.';
+  }
+}
+```
+
+### Decorators de Método HTTP
+
+Dentro de um Controller, você usa decorators de método para vincular os métodos da classe a verbos HTTP específicos. Os mais comuns são:
+
+-   `@Get()`: Para requisições `GET`.
+-   `@Post()`: Para requisições `POST`.
+-   `@Put()`: Para requisições `PUT` (geralmente para substituir um recurso inteiro).
+-   `@Patch()`: Para requisições `PATCH` (para atualizar parcialmente um recurso).
+-   `@Delete()`: Para requisições `DELETE`.
+-   `@All()`: Para qualquer verbo HTTP.
+
+## Acessando Dados da Requisição
+
+Uma API raramente apenas retorna dados estáticos. Quase sempre, você precisará acessar informações da requisição, como parâmetros de rota, query strings ou o corpo (body) da requisição. Nest.js fornece decorators de parâmetro para fazer isso de forma declarativa e elegante.
+
+### Parâmetros de Rota com `@Param()`
+
+Para capturar segmentos dinâmicos de uma URL (ex: `/posts/123`), você define um parâmetro na rota com a sintaxe `:nome` e usa o decorator `@Param()`.
+
+```typescript
+// Mapeado para: GET /posts/algum-id
+@Get(':id')
+findOne(@Param('id') id: string) {
+  return `Este endpoint retorna o post com o ID: ${id}`;
+}
+```
+
+### Query Strings com `@Query()`
+
+Para acessar os parâmetros de uma query string (ex: `/posts?limit=10&page=1`), use o decorator `@Query()`.
+
+```typescript
+// Mapeado para: GET /posts?limit=10&page=1
+@Get()
+findAll(@Query('limit') limit: string, @Query('page') page: string) {
+  return `Retornando posts. Limite: ${limit}, Página: ${page}`;
+}
+```
+
+### Corpo da Requisição com `@Body()`
+
+Para requisições `POST`, `PUT` ou `PATCH`, você geralmente envia dados no corpo da requisição. O decorator `@Body()` extrai esses dados e os injeta como um argumento no seu método.
+
+```typescript
+// Mapeado para: POST /posts
+@Post()
+create(@Body() postData: any) {
+  return {
+    message: 'Post criado com sucesso!',
+    data: postData,
+  };
+}
+```
+
+<Aside type="note" title="A Boa Prática: DTOs (Data Transfer Objects)">
+No exemplo acima, usamos `any` para tipar `postData`. Em uma aplicação real, isso é uma má prática. O ideal é criar uma classe **DTO (Data Transfer Object)** para definir a "forma" dos dados que você espera receber. Isso garante tipagem forte e abre a porta para validações automáticas, que veremos mais adiante.
+
+```typescript
+// Exemplo de um DTO
+// src/posts/dto/create-post.dto.ts
+export class CreatePostDto {
+  title: string;
+  content: string;
+  authorId: number;
+}
+```
+
+```typescript
+// Usando o DTO no Controller
+import { CreatePostDto } from './dto/create-post.dto';
+
+// ...
+@Post()
+create(@Body() createPostDto: CreatePostDto) {
+  // Agora `createPostDto` tem autocompletar e verificação de tipos!
+  console.log(createPostDto.title); 
+  return 'Post criado!';
+}
+```
+
+</Aside>
+
+## Respostas e Status Codes
+
+Por padrão, o Nest.js envia uma resposta com status code `200 OK` para a maioria das requisições e `201 Created` para requisições `POST`. O valor retornado pelo seu método de controller se torna automaticamente o corpo (payload) da resposta, serializado como JSON.
+
+Para customizar o status code, você pode usar o decorator `@HttpCode()`:
+
+```typescript
+import { HttpCode } from '@nestjs/common';
+
+@Post()
+@HttpCode(204) // No Content
+create() {
+  // Lógica para criar o recurso...
+  // Retornar `undefined` ou `void`
+}
+```
+
+Com esses conceitos, você já pode construir a camada de roteamento de APIs complexas, definindo como o mundo exterior se comunica com sua aplicação Nest.js.

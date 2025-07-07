@@ -1,0 +1,63 @@
+---
+title: "O Ciclo de Vida de uma Requisição (Request Lifecycle)"
+description: "Siga o caminho completo de uma requisição HTTP através do Nest.js, desde a sua chegada até a resposta final, e entenda o papel de cada peça no processo."
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+Quando uma requisição HTTP chega à sua aplicação Nest.js, ela não vai diretamente para o seu `Controller`. Em vez disso, ela passa por uma sequência bem definida de componentes, cada um com uma responsabilidade específica. Este fluxo é conhecido como o **Ciclo de Vida da Requisição** (ou *Request Lifecycle*).
+
+Compreender este ciclo é crucial para saber onde aplicar lógicas de validação, autenticação, logging e transformação de dados.
+
+## O Fluxo Padrão de uma Requisição
+
+Aqui está a sequência pela qual uma requisição típica viaja. Imagine como uma linha de montagem:
+
+![Fluxograma do Ciclo de Vida de uma Requisição em Nest.js](/public/ciclo_de_vida_nest_js.webp)
+*<p style="text-align: center; font-style: italic;">Fluxograma ilustrando ciclo de vida</p>*
+
+<CardGrid>
+    <Card title="1. Middleware">
+        O primeiro a agir. Um Middleware pode executar qualquer código, fazer alterações nos objetos de requisição e resposta (`req`, `res`) e passar o controle para o próximo middleware. É ideal para tarefas como logging, CORS ou headers de segurança (Helmet).
+    </Card>
+    <Card title="2. Guards">
+        Guards têm uma única responsabilidade: determinar se a requisição atual tem permissão para prosseguir. Eles são a principal ferramenta para **autenticação** (quem você é) e **autorização** (o que você pode fazer). Se um Guard retornar `false`, a requisição é negada com um erro 403 Forbidden.
+    </Card>
+    <Card title="3. Interceptors (antes do handler)">
+        Interceptors permitem inspecionar e/ou transformar o resultado de uma função. Antes de o handler do controller ser executado, eles podem transformar a requisição, adicionar lógica extra ou até mesmo servir a resposta a partir de um cache, evitando a execução do handler.
+    </Card>
+    <Card title="4. Pipes">
+        Pipes são usados para **validação** e **transformação** dos dados de entrada (geralmente os argumentos do handler, como `@Body()` ou `@Param()`). Por exemplo, um `ValidationPipe` pode garantir que o corpo da requisição corresponde a um DTO, e um `ParseIntPipe` pode transformar um parâmetro de string em um número.
+    </Card>
+</CardGrid>
+
+---
+
+### O Coração da Lógica
+
+Se a requisição passar por todas as etapas acima, ela finalmente chega ao seu destino:
+
+**5. Controller e Provider (Service)**
+-   O **Controller** (o método do handler da rota) é executado.
+-   Normalmente, o Controller delega a execução da lógica de negócio para um **Provider** (Service).
+-   O Service processa a lógica, talvez interaja com um banco de dados, e retorna um resultado para o Controller.
+
+---
+
+### O Caminho de Volta
+
+Após o handler do Controller retornar um valor, a requisição começa sua jornada de volta:
+
+**6. Interceptors (depois do handler)**
+A requisição passa novamente pelos Interceptors, mas desta vez na "saída". Isso permite transformar a resposta que será enviada ao cliente. Um caso de uso comum é padronizar o formato de todas as respostas da API, envolvendo-as em um objeto com uma propriedade `data`.
+
+**7. Filtros de Exceção (Exception Filters)**
+Se, em qualquer ponto do ciclo, uma exceção não tratada for lançada (seja um `HttpException` do Nest ou um erro inesperado), ela é capturada pela camada de **Filtros de Exceção**. Estes filtros processam o erro e geram uma resposta amigável e padronizada para o cliente (ex: um JSON de erro).
+
+<Aside title="A Sequência Completa">
+**Entrada:** `Middleware` → `Guards` → `Interceptors (antes)` → `Pipes`
+<br/>**Processamento:** `Controller` → `Service`
+<br/>**Saída:** `Interceptors (depois)` → `Resposta ao Cliente`
+<br/>*(Se ocorrer um erro em qualquer ponto)* → `Exception Filters`
+</Aside>
+
