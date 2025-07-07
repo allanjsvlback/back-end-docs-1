@@ -73,6 +73,16 @@ export default defineConfig({
 						{ label: 'Custom Hooks: Lógica Reutilizável', link: '2-hooks/8-custom-hooks/' },
 					]
 				},
+				{
+					label: 'Arquitetura de Projetos',
+					items: [
+					  { label: 'Estruturas de Pastas', link: '3-arquitetura/1-estruturas-de-pastas/' },
+					  { label: 'Roteamento em React', link: '3-arquitetura/2-roteamento-em-react/' },
+					  { label: 'Layouts e Páginas', link: '3-arquitetura/3-layouts-e-paginas/' },
+					  { label: 'Importações Absolutas', link: '3-arquitetura/4-importacoes-absolutas/' },
+					  { label: 'Comunicação entre Componentes', link: '3-arquitetura/5-comunicacao-entre-componentes/' },
+					]
+				},
 			],
 		}),
 	],

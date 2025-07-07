@@ -1,0 +1,134 @@
+Excelente! Vamos fechar esta categoria de arquitetura com um resumo que conecta vários pontos que discutimos, solidificando o entendimento sobre como os componentes "conversam" entre si.
+
+Aqui está o conteúdo para **`src/content/docs/3-arquitetura/5-comunicacao-entre-componentes.mdx`**:
+
+---
+
+```mdx
+---
+title: 'Comunicação entre Componentes'
+description: 'Um guia consolidado sobre os principais padrões de comunicação entre componentes em uma aplicação React, do mais simples ao mais avançado.'
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+Uma aplicação React é uma árvore de componentes que precisam trocar informações para funcionar. Entender os diferentes padrões de comunicação é fundamental para arquitetar um fluxo de dados limpo e previsível.
+
+O princípio central que governa essa comunicação é o **Fluxo de Dados Unidirecional** (ou "top-down"). Os dados fluem de componentes pais para componentes filhos, o que torna a aplicação mais fácil de depurar e entender.
+
+Vamos revisar os quatro principais padrões de comunicação.
+
+### Padrão 1: Pai para Filho (via `props`)
+
+Este é o padrão mais básico e comum. Um componente pai passa dados para um componente filho através de `props`. O filho recebe esses dados e os utiliza para renderizar sua UI.
+
+<Card title="Como funciona" icon="arrow-down">
+```jsx
+function Parent() {
+  const userName = "Alice";
+  return <ChildComponent name={userName} />;
+}
+
+function ChildComponent(props) {
+  // O filho recebe e usa o dado
+  return <h1>Bem-vindo(a), {props.name}!</h1>;
+}
+```
+</Card>
+
+### Padrão 2: Filho para Pai (via Callbacks)
+
+Mas e se um filho precisar comunicar algo de volta para o pai, como um clique de botão ou um valor de input? Como o fluxo é unidirecional, o filho não pode modificar o pai diretamente.
+
+A solução é o pai passar uma **função de callback** para o filho via `props`. O filho, então, chama essa função quando um evento ocorre, passando dados como argumento se necessário.
+
+<Card title="Como funciona" icon="arrow-up">
+```jsx
+function Parent() {
+  const [inputValue, setInputValue] = useState('');
+
+  // 1. O pai define a função de callback.
+  const handleInputChange = (newValue) => {
+    setInputValue(newValue);
+  };
+
+  return (
+    <div>
+      <p>O valor digitado é: {inputValue}</p>
+      {/* 2. A função é passada como prop para o filho. */}
+      <ChildInput onChange={handleInputChange} />
+    </div>
+  );
+}
+
+function ChildInput(props) {
+  // 3. O filho chama a função recebida quando o evento ocorre.
+  return (
+    <input
+      type="text"
+      onChange={(e) => props.onChange(e.target.value)}
+    />
+  );
+}
+```
+</Card>
+
+### Padrão 3: Entre Componentes Irmãos
+
+Dois componentes irmãos não podem se comunicar diretamente. Se o `ComponenteA` precisa afetar o `ComponenteB`, eles precisam de um intermediário. A solução padrão do React para isso é **"Lifting State Up" (Elevar o Estado)**.
+
+A ideia é mover o estado compartilhado para o **ancestral comum mais próximo** dos componentes irmãos. Esse ancestral então gerencia o estado e o distribui para os filhos via `props` (Padrão 1) e recebe atualizações via callbacks (Padrão 2).
+
+<Card title="Como funciona" icon="users">
+```jsx
+// O ancestral comum (App) gerencia o estado.
+function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      {/* Ele passa o estado e o callback para ambos os irmãos. */}
+      <Display count={count} />
+      <Button onClick={() => setCount(count + 1)} />
+    </div>
+  );
+}
+
+function Display({ count }) {
+  return <p>Contagem: {count}</p>;
+}
+
+function Button({ onClick }) {
+  return <button onClick={onClick}>Incrementar</button>;
+}
+```
+</Card>
+
+### Padrão 4: Entre Componentes Distantes
+
+Quando o "Lifting State Up" se torna impraticável porque os componentes estão muito distantes na árvore (levando ao "prop drilling"), recorremos a soluções de estado global.
+
+<Card title="Como funciona" icon="tree-structure">
+-   **`useContext`:** A solução nativa do React. Você cria um `Provider` no topo da árvore e qualquer componente filho pode "consumir" os dados diretamente, sem passá-los por `props`. Ideal para dados de baixa frequência de atualização.
+-   **Bibliotecas de Estado Global (Zustand, Redux):** Para estados complexos e de alta frequência, essas bibliotecas oferecem um "store" desacoplado da árvore de componentes. Qualquer componente pode se inscrever e reagir a mudanças no estado de forma otimizada.
+</Card>
+
+## Fluxograma de Decisão
+
+<Aside type="note" title="Qual padrão usar?">
+
+_Um fluxograma visual pode ser inserido aqui para ilustrar o processo de decisão._
+
+1.  Os componentes têm uma relação pai-filho?
+    -   **Sim:** Use `props` e callbacks.
+2.  Eles são irmãos?
+    -   **Sim:** Use "Lifting State Up".
+3.  Eles são distantes na árvore?
+    -   **Sim:** O estado muda com frequência?
+        -   **Não:** Use `useContext`.
+        -   **Sim:** Use uma biblioteca de estado global.
+</Aside>
+
+
+
+

@@ -1,0 +1,119 @@
+---
+title: 'Roteamento em React'
+description: 'Aprenda como implementar navegação entre páginas em uma Single Page Application (SPA) com a biblioteca React Router.'
+---
+
+import { Aside, Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Aplicações React tradicionais são **Single Page Applications (SPAs)**. Isso significa que o navegador carrega um único arquivo HTML e o JavaScript do React se encarrega de renderizar diferentes "páginas" ou "visões" dinamicamente, sem a necessidade de recarregar a página inteira a cada navegação.
+
+Para gerenciar qual componente de página exibir com base na URL do navegador, precisamos de uma biblioteca de roteamento.
+
+## Introdução ao React Router
+
+A biblioteca mais popular e padrão da comunidade para roteamento em React é a **React Router**. Ela fornece um conjunto de componentes e Hooks que tornam a implementação de rotas declarativa e fácil de integrar.
+
+<Aside type="note">
+Este guia usa a versão 6 do React Router, que é a versão moderna e recomendada. A sintaxe é significativamente diferente das versões mais antigas.
+</Aside>
+
+### Componentes Essenciais
+
+Para configurar o roteamento básico, você precisará de quatro componentes principais:
+
+<CardGrid>
+	<Card title="`<BrowserRouter>`" icon="browser">
+		Este componente deve envolver toda a sua aplicação (ou a parte dela que precisa de roteamento). Ele conecta sua aplicação à URL do navegador e usa a History API do HTML5 para manter a UI sincronizada com a URL.
+	</Card>
+	<Card title="`<Routes>`" icon="branches">
+		Pense neste componente como um `switch` para suas rotas. Ele olha para todas as suas rotas filhas (`<Route>`) e renderiza a primeira que corresponde à URL atual.
+	</Card>
+    <Card title="`<Route>`" icon="document">
+		É aqui que você define uma rota individual. Ela tem duas `props` principais: `path` (o caminho da URL, como `/about`) e `element` (o componente React que deve ser renderizado para esse caminho).
+	</Card>
+    <Card title="`<Link>`" icon="link">
+        Para criar links de navegação, use o componente `<Link>` em vez da tag `<a>` do HTML. O `<Link>` impede o recarregamento da página e atualiza a URL, permitindo que o React Router renderize o novo componente.
+	</Card>
+</CardGrid>
+
+## Exemplo Prático: Configurando Rotas
+
+Vamos criar uma aplicação simples com uma página inicial, uma página "Sobre" e uma página de "Dashboard".
+
+<Tabs>
+<TabItem label="1. index.js (Ponto de Entrada)">
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    {/* Envolvemos o App com o BrowserRouter */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+```
+</TabItem>
+<TabItem label="2. App.jsx (Configuração das Rotas)">
+```jsx
+import { Routes, Route, Link } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import DashboardPage from './pages/DashboardPage';
+
+function App() {
+  return (
+    <div>
+      <nav>
+        <ul>
+          <li><Link to="/">Início</Link></li>
+          <li><Link to="/about">Sobre</Link></li>
+          <li><Link to="/dashboard">Dashboard</Link></li>
+        </ul>
+      </nav>
+
+      <hr />
+
+      {/* Define a área onde o conteúdo da rota será renderizado */}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;
+```
+</TabItem>
+</Tabs>
+
+## Rotas Dinâmicas com Parâmetros
+
+E se você precisar de uma rota para uma página de detalhes de um produto, como `/products/123`? O React Router lida com isso através de **parâmetros de rota**. Você define um parâmetro na `prop` `path` usando dois pontos (`:`).
+
+```jsx
+import { useParams } from 'react-router-dom';
+
+// Componente para a página de detalhes do produto
+function ProductDetailPage() {
+  // O hook useParams retorna um objeto com os parâmetros da URL
+  const { productId } = useParams();
+
+  return <h1>Detalhes do Produto: {productId}</h1>;
+}
+
+// Na configuração das rotas:
+<Route path="/products/:productId" element={<ProductDetailPage />} />
+```
+Agora, qualquer URL que corresponda ao padrão `/products/...` (como `/products/123` ou `/products/abc`) renderizará o componente `ProductDetailPage`, e o `productId` estará disponível através do hook `useParams`.
+
+---
+
+Com o roteamento configurado, um problema comum surge: como reutilizar elementos como a barra de navegação e o rodapé em todas as páginas? A solução para isso é o padrão de **Layouts e Páginas**.
