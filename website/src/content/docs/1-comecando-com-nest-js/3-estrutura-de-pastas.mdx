@@ -1,0 +1,130 @@
+---
+title: "Anatomia de um Projeto: Estrutura de Pastas e Arquivos"
+description: Explore os arquivos e pastas gerados pelo Nest.js CLI e entenda o papel de cada um na sua aplicação.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Ao criar um projeto com o comando `nest new`, você notará que uma série de arquivos e pastas são gerados automaticamente. Pode parecer muita coisa no início, mas essa estrutura é projetada para ser lógica, escalável e fácil de manter.
+
+Vamos fazer um tour pelos arquivos mais importantes.
+
+```
+meu-primeiro-projeto/
+├── dist/
+├── node_modules/
+├── src/
+│   ├── app.controller.spec.ts
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   ├── app.service.ts
+│   └── main.ts
+├── test/
+│   ├── app.e2e-spec.ts
+│   └── jest-e2e.json
+├── .eslintrc.js
+├── .gitignore
+├── .prettierrc
+├── nest-cli.json
+├── package.json
+├── README.md
+├── tsconfig.build.json
+└── tsconfig.json
+```
+
+## O Diretório `src`: O Coração da Aplicação
+
+O diretório `src/` (source) é onde você passará a maior parte do seu tempo. Ele contém o código-fonte da sua aplicação TypeScript.
+
+### O Arquivo `main.ts`: O Ponto de Entrada
+Este é o arquivo que inicia sua aplicação. Ele cria uma instância do Nest.js e a faz "escutar" por requisições HTTP em uma porta específica.
+
+```typescript
+// src/main.ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  // Cria uma instância da aplicação Nest, usando o AppModule como módulo raiz.
+  const app = await NestFactory.create(AppModule);
+  
+  // Inicia o servidor HTTP na porta 3000.
+  await app.listen(3000);
+}
+bootstrap();
+```
+
+### O Arquivo `app.module.ts`: O Módulo Raiz
+Toda aplicação Nest.js é organizada em módulos. O `AppModule` é o módulo raiz, o ponto de partida que o Nest usa para construir o grafo de dependências e organizar a aplicação.
+
+```typescript
+// src/app.module.ts
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+@Module({
+  imports: [], // Lista de outros módulos a serem importados
+  controllers: [AppController], // Controllers que pertencem a este módulo
+  providers: [AppService], // Providers (como Services) que pertencem a este módulo
+})
+export class AppModule {}
+```
+
+### O Arquivo `app.controller.ts`: O Primeiro Controller
+Controllers são responsáveis por receber as requisições e enviar as respostas. O `@Controller()` decorator define uma rota base para todos os endpoints dentro da classe.
+
+```typescript
+// src/app.controller.ts
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+
+@Controller() // Rota base (neste caso, a raiz "/")
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get() // Define um endpoint para o método HTTP GET na rota base
+  getHello(): string {
+    return this.appService.getHello();
+  }
+}
+```
+
+### O Arquivo `app.service.ts`: A Primeira Lógica de Negócio
+Services (ou Providers em geral) são responsáveis pela lógica de negócio e por tarefas mais complexas. Eles são projetados para serem injetados nos Controllers.
+
+```typescript
+// src/app.service.ts
+import { Injectable } from '@nestjs/common';
+
+@Injectable() // Marca a classe como um Provider que pode ser gerenciado pelo Nest
+export class AppService {
+  getHello(): string {
+    return 'Hello World!';
+  }
+}
+```
+
+<Aside type="tip" title="O Fluxo Central">
+A interação entre esses três arquivos representa o padrão fundamental do Nest.js:
+1.  Uma requisição chega e é direcionada ao `AppController`.
+2.  O `AppController` chama um método do `AppService` para obter os dados ou executar uma ação.
+3.  O `AppService` executa a lógica e retorna o resultado para o `AppController`.
+4.  O `AppController` envia o resultado como uma resposta HTTP ao cliente.
+</Aside>
+
+### O Arquivo `app.controller.spec.ts`: Teste Unitário
+Este é um arquivo de teste para o `AppController`. O Nest.js vem com uma configuração de testes robusta baseada no Jest. Este arquivo é um exemplo de um teste unitário.
+
+## O Diretório `test`
+Este diretório é configurado para testes **end-to-end (E2E)**. Diferente dos testes unitários, que testam uma peça isolada, os testes E2E testam o comportamento da aplicação como um todo, simulando requisições HTTP reais.
+
+## Arquivos de Configuração na Raiz
+
+-   **`nest-cli.json`**: Arquivo de configuração para o Nest CLI. Define como o CLI deve se comportar em relação a este projeto (ex: qual o diretório de código-fonte).
+-   **`package.json`**: O arquivo padrão do Node.js que gerencia as dependências e os scripts do projeto (como `npm run start:dev`).
+-   **`tsconfig.json` e `tsconfig.build.json`**: Arquivos de configuração do TypeScript. Eles dizem ao compilador como transpilar seu código `.ts` para `.js`.
+-   **`.eslintrc.js`**: Configurações para o ESLint, uma ferramenta para encontrar e corrigir problemas no seu código (linting).
+-   **`.prettierrc`**: Configurações para o Prettier, uma ferramenta para formatar seu código automaticamente, mantendo um estilo consistente.
+
+Agora que entendemos a estrutura, no próximo passo vamos finalmente **Executar a Aplicação** e ver o "Hello World!" em ação.

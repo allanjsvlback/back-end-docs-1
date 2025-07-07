@@ -1,0 +1,58 @@
+---
+title: O que é Nest.js e por que usar?
+description: Entenda o que é o Nest.js, sua filosofia e por que ele é uma excelente escolha para construir aplicações de backend modernas e escaláveis.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Nest.js é um framework Node.js progressivo para construir aplicações de backend eficientes, confiáveis e escaláveis. Ele é construído com e sobre o TypeScript, o que traz uma sólida tipagem estática e as últimas funcionalidades do ECMAScript para o desenvolvimento do lado do servidor.
+
+Por baixo dos panos, Nest.js faz uso de frameworks HTTP robustos como **Express.js** (o padrão) e, opcionalmente, pode ser configurado para usar **Fastify**. No entanto, ele abstrai a complexidade desses frameworks, oferecendo uma camada de arquitetura que força boas práticas e padrões de design.
+
+## A Filosofia: Arquitetura Opinativa
+
+Enquanto frameworks como o Express.js lhe dão total liberdade (e a responsabilidade) de estruturar seu projeto do zero, o Nest.js é **"opinativo"**. Ele oferece uma arquitetura pronta para uso, fortemente inspirada no Angular, que ajuda a criar aplicações altamente testáveis, escaláveis, com baixo acoplamento e de fácil manutenção.
+
+Essa arquitetura é baseada em três pilares principais:
+
+-   **Módulos (`Modules`):** Usados para organizar o código e encapsular funcionalidades relacionadas. Uma aplicação Nest.js é um conjunto de módulos.
+-   **Controllers (`Controllers`):** Responsáveis por receber as requisições HTTP e retornar as respostas ao cliente. Eles definem as rotas da sua aplicação.
+-   **Providers (`Providers`):** Quase tudo que não é um Módulo ou um Controller é um Provider. Isso inclui **Services**, **Repositories**, **Factories**, etc. A principal ideia é que eles podem ser injetados como dependências, promovendo a reutilização de código e a separação de responsabilidades. A lógica de negócio da sua aplicação geralmente reside nos Services.
+
+## Principais Vantagens: Nest.js vs. Express.js Puro
+
+A decisão de usar Nest.js geralmente se resume aos benefícios que sua estrutura opinativa proporciona em comparação com uma abordagem mais minimalista.
+
+### Estrutura e Escalabilidade
+A divisão clara de responsabilidades entre Controllers, Services e Módulos garante que, mesmo em projetos grandes, o código permaneça organizado. Isso evita o "código espaguete" e facilita a manutenção e a entrada de novos desenvolvedores no projeto.
+
+### TypeScript como Cidadão de Primeira Classe
+Embora seja possível usar TypeScript com Express, o Nest.js foi projetado em torno dele. Isso significa que você obtém, desde o início, todos os benefícios da tipagem estática:
+-   Detecção de erros em tempo de desenvolvimento, não em produção.
+-   Autocompletar (IntelliSense) poderoso no seu editor de código.
+-   Refatoração de código mais segura e confiável.
+
+### Injeção de Dependência (DI) Integrada
+Nest.js possui um poderoso sistema de Injeção de Dependência. Em vez de uma classe criar suas próprias dependências, elas são "injetadas" de fora pelo framework. Isso resulta em:
+-   **Baixo acoplamento:** As classes são mais independentes umas das outras.
+-   **Maior testabilidade:** É muito mais fácil "mockar" (simular) dependências em testes unitários.
+-   **Reutilização de código:** Services e outros providers podem ser facilmente compartilhados por toda a aplicação.
+
+### Ecossistema Modular e Extensível
+O Nest.js oferece um ecossistema rico com módulos dedicados (`@nestjs/...`) para tarefas comuns, como:
+-   Conexão com bancos de dados (TypeORM, Mongoose).
+-   Comunicação em tempo real (WebSockets).
+-   Autenticação (Passport.js).
+-   Criação de Microserviços (gRPC, TCP, Kafka).
+-   Gerenciamento de filas (Queues).
+-   Cache.
+
+<Aside title="Quando escolher Nest.js?">
+O Nest.js brilha especialmente em cenários como:
+-   **APIs REST/GraphQL complexas:** Onde a organização e a manutenibilidade são cruciais.
+-   **Arquiteturas de Microserviços:** O suporte nativo facilita a comunicação entre serviços.
+-   **Projetos de longo prazo:** A estrutura robusta evita a degradação da qualidade do código ao longo do tempo.
+-   **Equipes de desenvolvimento:** A padronização da arquitetura garante que todos os membros da equipe "falem a mesma língua".
+</Aside>
+
+Em resumo, o Nest.js não reinventa a roda. Ele a organiza em um veículo bem-estruturado, fornecendo as ferramentas e os padrões necessários para construir aplicações de backend robustas e profissionais sobre a base sólida do Node.js e TypeScript.

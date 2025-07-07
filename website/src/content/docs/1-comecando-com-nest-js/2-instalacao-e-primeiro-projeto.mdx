@@ -1,0 +1,88 @@
+---
+title: Instalação e Primeiro Projeto
+description: Aprenda a instalar o Nest.js CLI e criar sua primeira aplicação Nest.js passo a passo.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A maneira mais rápida e recomendada de começar um projeto Nest.js é utilizando o **Nest.js CLI** (Command Line Interface). O CLI é uma ferramenta poderosa que não só cria a estrutura inicial do projeto, mas também ajuda a gerar os diferentes blocos de construção da sua aplicação (módulos, controllers, etc.), garantindo a padronização e a produtividade.
+
+## Pré-requisitos
+
+Antes de começar, certifique-se de que você tem o Node.js instalado na sua máquina.
+
+-   **Node.js:** Versão 16 ou superior.
+
+Se você não tiver o Node.js, pode baixá-lo em [nodejs.org](https://nodejs.org/). A instalação do Node.js também inclui o gerenciador de pacotes **npm**.
+
+## Passo 1: Instalando o Nest.js CLI
+
+Para instalar o CLI globalmente na sua máquina, abra seu terminal e execute o seguinte comando:
+
+```bash
+npm i -g @nestjs/cli
+```
+
+A flag `-g` garante que o comando `nest` se torne disponível em qualquer diretório do seu sistema.
+
+<Aside title="Prefere não instalar globalmente?">
+Se você não quiser instalar pacotes globalmente, pode usar o `npx`, que vem com o npm, para executar o CLI diretamente:
+
+```bash
+npx @nestjs/cli new meu-projeto
+```
+Esta abordagem baixa e executa o comando sem instalá-lo permanentemente no seu sistema.
+</Aside>
+
+## Passo 2: Criando um Novo Projeto
+
+Com o CLI instalado, criar um novo projeto é muito simples. Navegue até o diretório onde você deseja criar seu projeto e execute:
+
+```bash
+nest new meu-primeiro-projeto
+```
+
+O CLI fará algumas coisas por você:
+1.  Ele perguntará qual gerenciador de pacotes você prefere usar (`npm`, `yarn` ou `pnpm`).
+2.  Criará um novo diretório chamado `meu-primeiro-projeto`.
+3.  Gerará a estrutura de arquivos e pastas com um código inicial (boilerplate).
+4.  Instalará todas as dependências necessárias.
+
+O processo no seu terminal se parecerá com isto:
+
+```sh
+❯ nest new meu-primeiro-projeto
+
+? Which package manager would you ❤️ to use? (Use arrow keys)
+❯ npm
+  yarn
+  pnpm
+
+CREATE meu-primeiro-projeto/.eslintrc.js (663 bytes)
+CREATE meu-primeiro-projeto/.prettierrc (51 bytes)
+CREATE meu-primeiro-projeto/nest-cli.json (118 bytes)
+CREATE meu-primeiro-projeto/package.json (1949 bytes)
+CREATE meu-primeiro-projeto/README.md (3340 bytes)
+CREATE meu-primeiro-projeto/tsconfig.build.json (97 bytes)
+CREATE meu-primeiro-projeto/tsconfig.json (546 bytes)
+CREATE meu-primeiro-projeto/src/app.controller.spec.ts (617 bytes)
+CREATE meu-primeiro-projeto/src/app.controller.ts (274 bytes)
+CREATE meu-primeiro-projeto/src/app.module.ts (249 bytes)
+CREATE meu-primeiro-projeto/src/app.service.ts (142 bytes)
+CREATE meu-primeiro-projeto/src/main.ts (548 bytes)
+CREATE meu-primeiro-projeto/test/app.e2e-spec.ts (631 bytes)
+CREATE meu-primeiro-projeto/test/jest-e2e.json (183 bytes)
+
+✔ Installation in progress... ☕
+
+Successfully created project meu-primeiro-projeto
+```
+
+Parabéns! Você acabou de criar sua primeira aplicação Nest.js.
+
+Agora, você pode entrar no diretório do projeto para explorar os arquivos que foram criados:
+```bash
+cd meu-primeiro-projeto
+```
+
+No próximo capítulo, vamos analisar a **Estrutura de Pastas e Arquivos** para entender o que cada um desses arquivos faz.

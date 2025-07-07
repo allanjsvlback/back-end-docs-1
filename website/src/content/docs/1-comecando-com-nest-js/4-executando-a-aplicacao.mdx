@@ -1,0 +1,81 @@
+---
+title: Executando sua Aplicação
+description: Aprenda a iniciar sua aplicação Nest.js em modo de desenvolvimento e produção e veja seu primeiro endpoint funcionando.
+---
+
+Depois de criar o projeto e entender sua estrutura, o próximo passo é executá-lo. O projeto Nest.js gerado pelo CLI já vem com scripts úteis definidos no arquivo `package.json` para facilitar esse processo.
+
+
+1.  **Abra seu terminal**
+
+    Se você ainda não estiver no diretório do projeto, navegue até ele:
+    ```bash
+    cd meu-primeiro-projeto
+    ```
+    
+2.  **Inicie em Modo de Desenvolvimento**
+
+    Para o desenvolvimento diário, você usará o modo "watch". Neste modo, o servidor reinicia automaticamente toda vez que você salva uma alteração em um arquivo. Isso agiliza muito o ciclo de desenvolvimento.
+
+    Execute o seguinte comando:
+    ```bash
+    npm run start:dev
+    ```
+    
+    Você verá uma saída no terminal parecida com esta:
+    
+    ```sh
+    ❯ npm run start:dev
+
+    > meu-primeiro-projeto@0.0.1 start:dev
+    > nest start --watch
+
+    [Nest] 10182  - 10/27/2023, 11:30:00 AM     LOG [NestFactory] Starting Nest application...
+    [Nest] 10182  - 10/27/2023, 11:30:00 AM     LOG [InstanceLoader] AppModule dependencies initialized
+    [Nest] 10182  - 10/27/2023, 11:30:00 AM     LOG [RoutesResolver] AppController {/}:
+    [Nest] 10182  - 10/27/2023, 11:30:00 AM     LOG [RouterExplorer] Mapped {/, GET} route
+    [Nest] 10182  - 10/27/2023, 11:30:00 AM     LOG [NestApplication] Nest application successfully started
+    ```
+    A última linha confirma que sua aplicação está rodando! Por padrão, ela escuta na porta `3000`.
+
+3.  **Acesse o Endpoint**
+
+    Agora que o servidor está no ar, você pode testar o endpoint `GET /` que vimos no arquivo `app.controller.ts`.
+
+    Abra seu navegador e acesse a URL:
+    [http://localhost:3000](http://localhost:3000)
+
+    Você deverá ver a mensagem "Hello World!" na tela.
+
+    Alternativamente, você pode usar uma ferramenta de linha de comando como o `curl`:
+    ```bash
+    curl http://localhost:3000
+    ```
+    A saída no terminal será: `Hello World!`
+
+
+## Outros Scripts Úteis
+
+O `package.json` do seu projeto define outros scripts importantes:
+
+-   **`npm run start`**: Inicia a aplicação a partir dos arquivos JavaScript já compilados no diretório `dist/`. Antes de usar este comando, você precisa ter executado o `build` pelo menos uma vez.
+-   **`npm run build`**: Compila seu código TypeScript (`.ts`) para JavaScript (`.js`) e o coloca no diretório `dist/`. Este é um passo necessário antes de fazer o deploy da sua aplicação para produção.
+-   **`npm run start:prod`**: O comando para produção. Ele primeiro garante que o build foi feito e depois executa o comando `node dist/main` para iniciar o servidor. É otimizado para performance, sem o "watch mode".
+-   **`npm test`**: Executa os testes unitários (arquivos `.spec.ts`).
+-   **`npm run test:e2e`**: Executa os testes end-to-end (arquivos `.e2e-spec.ts`).
+
+## Experimente o "Hot Reload"
+
+Com o servidor ainda rodando (`npm run start:dev`), tente fazer uma pequena alteração:
+1.  Abra o arquivo `src/app.service.ts`.
+2.  Mude a string retornada pelo método `getHello()`:
+    ```typescript
+    // src/app.service.ts
+    getHello(): string {
+      return 'Bem-vindo ao Nest.js!';
+    }
+    ```
+3.  Salve o arquivo.
+4.  Observe seu terminal. O Nest.js irá detectar a mudança e reiniciar o servidor automaticamente.
+5.  Atualize a página [http://localhost:3000](http://localhost:3000) no seu navegador. Você verá a nova mensagem!
+
