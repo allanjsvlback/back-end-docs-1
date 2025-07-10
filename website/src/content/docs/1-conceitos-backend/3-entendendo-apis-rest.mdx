@@ -1,0 +1,76 @@
+---
+title: "Entendendo APIs REST: Recursos e Verbos"
+description: "Aprenda os princípios fundamentais da arquitetura REST, o estilo mais popular para projetar APIs web, focando em recursos e na utilização correta dos verbos HTTP."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Agora que sabemos o que é uma API, vamos falar sobre o estilo arquitetural mais popular para projetá-las: **REST**.
+
+**REST** significa **RE**presentational **S**tate **T**ransfer. É um conjunto de princípios e restrições que, quando seguidos, ajudam a criar APIs escaláveis, flexíveis e fáceis de usar. O Nest.js foi projetado para facilitar a criação de APIs que seguem o padrão REST.
+
+A ideia central do REST é pensar na sua API em termos de **Recursos**.
+
+## Tudo é um Recurso
+
+Em uma API REST, qualquer entidade com a qual você possa interagir é um **recurso**. Um recurso pode ser:
+
+-   Um usuário
+-   Um produto em uma loja virtual
+-   Um post em um blog
+-   Um comentário nesse post
+-   Uma foto em uma galeria
+
+Cada recurso é identificado por uma URL única, que funciona como seu "endereço" na web. Por exemplo:
+
+-   `/users` (uma coleção de todos os usuários)
+-   `/users/123` (um usuário específico)
+-   `/products/45` (um produto específico)
+-   `/posts/98/comments` (uma coleção de comentários de um post específico)
+
+Essa estrutura de URL torna a API intuitiva e previsível.
+
+## Verbos HTTP e Operações CRUD
+
+Em vez de criar nomes de URL como `/getUsers` ou `/createUser`, o REST utiliza os **verbos do protocolo HTTP** para indicar a ação que se deseja realizar sobre um recurso. Isso se alinha perfeitamente com as quatro operações básicas de manipulação de dados, conhecidas como **CRUD (Create, Read, Update, Delete)**.
+
+<CardGrid>
+    <Card title="📖 GET (Read)">
+        Usado para **ler** ou **buscar** um recurso. É uma operação segura, que não deve alterar nenhum dado no servidor.
+        <br/>`GET /users` -> Busca a lista de todos os usuários.
+        <br/>`GET /users/123` -> Busca os dados do usuário com ID 123.
+    </Card>
+    <Card title="📝 POST (Create)">
+        Usado para **criar** um novo recurso. Os dados do novo recurso são enviados no corpo (body) da requisição.
+        <br/>`POST /users` -> Cria um novo usuário.
+    </Card>
+    <Card title="🛠️ PUT / PATCH (Update)">
+        Usados para **atualizar** um recurso existente. 
+        <br/>`PUT /users/123` -> Substitui **todos** os dados do usuário 123.
+        <br/>`PATCH /users/123` -> Atualiza **parcialmente** os dados do usuário 123 (ex: apenas o email).
+    </Card>
+    <Card title="❌ DELETE (Delete)">
+        Usado para **remover** um recurso.
+        <br/>`DELETE /users/123` -> Deleta o usuário com ID 123.
+    </Card>
+</CardGrid>
+
+Essa combinação de **substantivos na URL (recursos)** e **verbos HTTP (ações)** é o coração de uma API RESTful.
+
+<Aside title="A Comunicação é Stateless">
+Uma das restrições mais importantes do REST é que a comunicação deve ser **stateless** (sem estado). Isso significa que cada requisição do cliente para o servidor deve conter toda a informação necessária para que o servidor a entenda e processe. O servidor não armazena nenhuma informação sobre o cliente entre as requisições. Isso torna a API mais simples e escalável.
+</Aside>
+
+## Códigos de Status HTTP
+
+Outra peça fundamental do REST é o uso correto dos **códigos de status HTTP** na resposta. Eles informam ao cliente o resultado da sua requisição de forma padronizada. Alguns exemplos comuns:
+
+-   `200 OK`: A requisição foi bem-sucedida (geralmente para `GET`).
+-   `201 Created`: O recurso foi criado com sucesso (para `POST`).
+-   `204 No Content`: A requisição foi bem-sucedida, mas não há conteúdo para retornar (para `DELETE`).
+-   `400 Bad Request`: A requisição do cliente estava malformada (ex: dados faltando).
+-   `401 Unauthorized`: O cliente não está autenticado.
+-   `403 Forbidden`: O cliente está autenticado, mas não tem permissão para acessar o recurso.
+-   `404 Not Found`: O recurso solicitado não foi encontrado.
+-   `500 Internal Server Error`: Ocorreu um erro inesperado no servidor.
