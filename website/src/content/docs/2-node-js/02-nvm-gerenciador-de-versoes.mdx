@@ -1,0 +1,95 @@
+---
+title: "Gerenciando Versões do Node.js com NVM"
+description: "Aprenda a instalar e usar o NVM (Node Version Manager) para gerenciar múltiplas versões do Node.js em sua máquina, uma ferramenta essencial para o desenvolvimento."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+No mundo real do desenvolvimento, você raramente trabalhará em um único projeto. Muitas vezes, você precisará manter um projeto antigo que usa uma versão mais antiga do Node.js (ex: 16.x) enquanto inicia um novo projeto com a versão mais recente (ex: 20.x).
+
+Se você instalar o Node.js diretamente no seu sistema, terá apenas uma versão global. Tentar alternar entre versões manualmente é um processo complicado e propenso a erros.
+
+## A Solução: NVM (Node Version Manager)
+
+**NVM** é uma ferramenta que permite instalar várias versões do Node.js na mesma máquina e alternar facilmente entre elas conforme a necessidade de cada projeto. Ele garante que as versões não entrem em conflito.
+
+### Instalação
+
+O NVM é um script de shell para sistemas baseados em Unix (Linux e macOS).
+
+1.  Abra seu terminal e execute o comando de instalação mais recente, que pode ser encontrado no [repositório oficial do NVM no GitHub](https://github.com/nvm-sh/nvm#installing-and-updating). Geralmente, o comando se parece com isto:
+
+    ```bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    ```
+    > Verifique sempre a versão mais recente no link oficial.
+
+2.  Após a execução, o script pedirá para você fechar e reabrir o terminal ou executar um comando como `source ~/.bashrc`. Isso carrega o NVM na sua sessão atual.
+
+3.  Para verificar se a instalação foi bem-sucedida, execute:
+    ```bash
+    nvm --version
+    ```
+    Se ele retornar um número de versão, está tudo certo!
+
+<Aside type="note" title="E para usuários de Windows?">
+O NVM oficial não suporta Windows. No entanto, existe um projeto separado e muito popular chamado **[nvm-windows](https://github.com/coreybutler/nvm-windows)** que oferece a mesma funcionalidade e uma experiência de uso muito similar. Se você está no Windows, recomendamos fortemente o uso dele.
+</Aside>
+
+### Comandos Essenciais do NVM
+
+Aqui estão os comandos que você mais usará no seu dia a dia:
+
+1.  **Instalar uma Versão do Node.js**
+
+    Para instalar a versão LTS (Long-Term Support) mais recente, que é a recomendada para a maioria dos projetos:
+    ```bash
+    nvm install --lts
+    ```
+    
+    Para instalar uma versão específica:
+    ```bash
+    nvm install 20.10.0
+    ```
+
+2.  **Listar Versões Instaladas**
+
+    Para ver todas as versões do Node.js que você tem na sua máquina:
+    ```bash
+    nvm ls
+    ```
+    A versão atualmente em uso será indicada por uma seta (`->`).
+
+3.  **Alternar Entre Versões**
+
+    Para mudar a versão do Node.js que seu terminal está usando nesta sessão:
+    ```bash
+    nvm use 18.17.0
+    ```
+    > Ao executar `node -v` agora, você verá a versão que acabou de selecionar.
+
+4.  **Definir uma Versão Padrão**
+
+    Para que toda nova janela de terminal comece com uma versão específica, você pode definir um alias padrão:
+    ```bash
+    nvm alias default 20.10.0
+    ```
+
+### Bônus: O Arquivo `.nvmrc`
+
+A melhor prática ao trabalhar em equipe é garantir que todos usem a mesma versão do Node.js para um projeto específico. O NVM facilita isso através de um arquivo `.nvmrc`.
+
+1.  Na raiz do seu projeto, crie um arquivo chamado `.nvmrc`.
+2.  Dentro dele, escreva apenas a versão do Node.js que o projeto deve usar. Por exemplo:
+
+    ```.nvmrc
+    20.10.0
+    ```
+
+3.  Agora, qualquer desenvolvedor que entrar na pasta do projeto pode simplesmente rodar o comando:
+    ```bash
+    nvm use
+    ```
+    O NVM lerá o arquivo `.nvmrc` e ativará automaticamente a versão correta do Node.js. Se a versão não estiver instalada, ele ainda dará a instrução para instalá-la com `nvm install`.
+
+Usar o NVM desde o início vai poupar muitas dores de cabeça e garantir um ambiente de desenvolvimento consistente e flexível.

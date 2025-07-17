@@ -1,0 +1,61 @@
+---
+title: "npm: O Gerenciador de Pacotes do Node.js"
+description: "Descubra o que é o npm, a importância do arquivo package.json e como gerenciar as dependências que dão superpoderes à sua aplicação Node.js."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Uma das maiores forças do Node.js não é apenas o que ele pode fazer por si só, mas sim seu vasto ecossistema de **pacotes** de código aberto. Um "pacote" é simplesmente um pedaço de código reutilizável que outra pessoa escreveu e que você pode usar em seu projeto para resolver um problema específico.
+
+Para gerenciar esses pacotes, o Node.js vem com uma ferramenta essencial: o **npm (Node Package Manager)**.
+
+<Card title="Analogia: Uma Loja de Blocos de Construção" icon="puzzle">
+Pense no **npm Registry** como uma gigantesca loja online com milhões de blocos de construção (os pacotes). Cada bloco faz algo único. O comando `npm` é o seu assistente pessoal que vai a essa loja, pega os blocos que você pediu e os traz para o seu projeto.
+</Card>
+
+## O `package.json`: A Identidade do seu Projeto
+
+Todo projeto Node.js que usa o npm tem um arquivo fundamental na sua raiz: o `package.json`. Ele é o arquivo de manifesto do seu projeto, contendo metadados importantes e, o mais crucial, a lista de todas as dependências.
+
+Para criar um `package.json` em um novo projeto, você pode rodar:
+```bash
+npm init -y
+```
+A flag `-y` aceita todas as opções padrão.
+
+As seções mais importantes do `package.json` são `dependencies` e `devDependencies`.
+
+<CardGrid>
+    <Card title="dependencies" icon="rocket">
+        São os pacotes que sua aplicação precisa para **funcionar em produção**. São as peças essenciais do seu motor. Quando você instala um pacote normal, ele vai para cá.
+        <br/>
+        <strong>Exemplos:</strong> `@nestjs/core`, `express`, `mongoose`.
+        <br/>
+        <strong>Comando:</strong> `npm install <nome-do-pacote>`
+    </Card>
+    <Card title="devDependencies" icon="setting">
+        São os pacotes que você só precisa durante o **desenvolvimento e teste**. São as ferramentas da sua oficina, que não vão junto com o produto final.
+        <br/>
+        <strong>Exemplos:</strong> `jest` (para testes), `eslint` (para linting), `@types/*` (para tipagens TypeScript).
+        <br/>
+        <strong>Comando:</strong> `npm install <nome-do-pacote> --save-dev` (ou a abreviação `-D`).
+    </Card>
+</CardGrid>
+
+## O `node_modules`: Onde os Pacotes Vivem
+
+Quando você executa `npm install`, o npm faz duas coisas:
+1.  Lê o seu `package.json` para saber quais pacotes baixar.
+2.  Cria uma pasta chamada `node_modules` e baixa o código-fonte de todas as suas dependências (e as dependências das suas dependências) para dentro dela.
+
+<Aside type="caution" title="Nunca versione o node_modules!">
+A pasta `node_modules` pode se tornar muito grande rapidamente. Ela **nunca** deve ser enviada para o seu sistema de controle de versão (como o Git). O arquivo `.gitignore` padrão gerado para projetos Node.js já inclui a linha `node_modules/` para garantir isso. Qualquer pessoa que clonar seu projeto só precisa rodar `npm install` para recriar a pasta `node_modules` exatamente como deveria ser, com base no `package.json`.
+</Aside>
+
+## O `package-lock.json`: Garantindo a Consistência
+
+Você também notará um arquivo chamado `package-lock.json`. Ele é gerado automaticamente pelo npm.
+
+-   **O que ele faz?** Ele "trava" as versões exatas de cada pacote que foi instalado. Enquanto o `package.json` pode dizer "quero a versão 5 ou superior" (`^5.0.0`), o `package-lock.json` registra "foi instalada a versão `5.2.1`".
+-   **Por que é importante?** Ele garante que toda vez que alguém rodar `npm install` no seu projeto, essa pessoa terá exatamente as mesmas versões de pacotes que você, evitando o clássico problema de "mas na minha máquina funciona!".

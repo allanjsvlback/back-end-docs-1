@@ -1,0 +1,56 @@
+---
+title: "Yarn e pnpm: Alternativas Modernas ao npm"
+description: "Conheça o Yarn e o pnpm, os dois gerenciadores de pacotes mais populares que surgiram como alternativas ao npm, e entenda suas principais vantagens em performance e eficiência."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+O `npm` é o gerenciador de pacotes padrão e funciona muito bem, especialmente em suas versões mais recentes. No entanto, em seus primeiros anos, ele tinha alguns problemas de performance e consistência. Isso abriu espaço para que a comunidade criasse ferramentas alternativas que abordassem essas questões.
+
+As duas alternativas mais populares hoje são o **Yarn** e o **pnpm**.
+
+## Yarn: O Pioneiro da Performance e Confiabilidade
+
+O Yarn foi criado pelo Facebook (agora Meta) em 2016 para resolver as principais dores do `npm` na época.
+
+-   **Performance:** Ele introduziu o cacheamento de pacotes e a instalação paralela, tornando o processo de `install` significativamente mais rápido.
+-   **Confiabilidade:** O Yarn foi o primeiro a introduzir um arquivo de "lock" (`yarn.lock`) por padrão. Isso garantia que todos os desenvolvedores em um projeto tivessem a mesma estrutura exata na pasta `node_modules`, resolvendo problemas de inconsistência.
+
+<Aside type="note">
+O sucesso do Yarn foi tão grande que o `npm` adotou muitas de suas ideias. O `npm` a partir da versão 5 introduziu o `package-lock.json` e melhorou muito sua performance, diminuindo a diferença entre as duas ferramentas.
+</Aside>
+
+## pnpm: O Rei da Eficiência
+
+O **pnpm** (performant npm) aborda um problema diferente: o desperdício de espaço em disco.
+
+**O Problema do `node_modules` Tradicional:**
+Se você tem 10 projetos na sua máquina e todos eles usam a mesma versão do Nest.js, tanto o `npm` quanto o `yarn` baixarão uma cópia completa do Nest.js para cada uma das 10 pastas `node_modules`. Isso consome muito espaço em disco desnecessariamente.
+
+**A Solução do `pnpm`:**
+O `pnpm` utiliza uma abordagem inteligente:
+1.  Ele mantém um **armazenamento global** (`content-addressable store`) na sua máquina com uma única cópia de cada versão de cada pacote.
+2.  Quando você instala uma dependência em um projeto, em vez de copiar os arquivos, o `pnpm` cria **hard links** (atalhos a nível de sistema de arquivos) daquele armazenamento global para a pasta `node_modules` do seu projeto.
+
+O resultado é uma instalação extremamente rápida e uma economia massiva de espaço em disco. Por essa razão, o **pnpm é a recomendação para muitos projetos modernos, incluindo os exemplos do próprio Nest.js**.
+
+## Tabela Comparativa de Comandos
+
+Mudar de um para o outro é muito fácil, já que os comandos são bastante similares.
+
+| Ação | npm | Yarn (Classic) | pnpm |
+| :--- | :--- | :--- | :--- |
+| **Instalar dependências** | `npm install` ou `npm i` | `yarn install` ou `yarn` | `pnpm install` ou `pnpm i` |
+| **Adicionar dependência** | `npm install <pacote>` | `yarn add <pacote>` | `pnpm add <pacote>` |
+| **Adicionar dep. de dev** | `npm install <pacote> -D` | `yarn add <pacote> -D` | `pnpm add <pacote> -D` |
+| **Remover dependência** | `npm uninstall <pacote>` | `yarn remove <pacote>` | `pnpm remove <pacote>` |
+| **Executar um script** | `npm run <script>` | `yarn <script>` | `pnpm <script>` |
+
+## Qual escolher?
+
+-   **npm:** É o padrão, vem com o Node.js e é totalmente confiável hoje em dia. Você nunca errará usando o `npm`.
+-   **Yarn:** Foi muito importante e ainda é usado em muitos projetos. Sua versão mais recente (Berry) introduziu conceitos novos como o Plug'n'Play, mas tem uma curva de aprendizado um pouco maior.
+-   **pnpm:** É a escolha de muitos por ser extremamente rápido e eficiente com o espaço em disco. Se você está começando um projeto novo, vale muito a pena considerá-lo.
+
+Neste guia, frequentemente usaremos os comandos do `npm` por ser o padrão universal, mas saiba que você pode usar o `pnpm` ou `yarn` sem problemas. O Nest.js CLI, por exemplo, detecta qual gerenciador você tem e pergunta qual você prefere usar ao criar um novo projeto.

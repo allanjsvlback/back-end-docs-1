@@ -1,0 +1,79 @@
+---
+title: "npx: O Executor de Pacotes do Node"
+description: "Entenda a diferença entre npm e npx. Descubra como o npx facilita a execução de pacotes sem a necessidade de instalá-los globalmente ou configurar caminhos complexos."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Junto com o `npm`, outra ferramenta de linha de comando é instalada automaticamente: o **`npx`**. Embora os nomes sejam parecidos, suas funções são bem diferentes e complementares.
+
+-   **`npm`** é um **gerenciador** de pacotes: sua principal função é instalar, atualizar e remover pacotes.
+-   **`npx`** é um **executor** de pacotes: sua principal função é executar o código de um pacote.
+
+## O Problema que o `npx` Resolve
+
+Antes do `npx`, existiam duas formas principais de executar um pacote de linha de comando (como o `jest` para testes ou o `typescript` para compilação):
+
+<CardGrid>
+    <Card title="1. Instalação Global">
+        Você podia instalar o pacote globalmente na sua máquina com `npm install -g <pacote>`.
+        <br/><br/>
+        <strong>Desvantagens:</strong>
+        <ul>
+            <li>Poluía sua máquina com pacotes que talvez você só usasse uma vez.</li>
+            <li>Se diferentes projetos precisassem de diferentes versões do mesmo pacote global, você teria um conflito.</li>
+        </ul>
+    </Card>
+    <Card title="2. Caminho Local">
+        Você podia instalar o pacote localmente como uma `devDependency` e executá-lo digitando o caminho completo para o executável dentro de `node_modules`.
+        <br/>
+        `./node_modules/.bin/jest`
+        <br/>
+        <strong>Desvantagens:</strong>
+        <ul>
+            <li>Digitar o caminho completo é verboso e inconveniente.</li>
+        </ul>
+    </Card>
+</CardGrid>
+
+O `npx` veio para resolver esses dois problemas de forma elegante.
+
+## Os Superpoderes do `npx`
+
+O `npx` tem dois casos de uso principais que simplificam muito a vida do desenvolvedor.
+
+### Caso 1: Executar Pacotes Instalados Localmente
+
+Quando você está dentro de um projeto e executa `npx <comando>`, ele automaticamente procura pelo executável desse comando dentro da sua pasta `node_modules/.bin`. Se encontrar, ele o executa.
+
+Isso transforma o comando longo e chato:
+`./node_modules/.bin/jest`
+
+Em um comando simples e limpo:
+```bash
+npx jest
+```
+Isso funciona para qualquer `devDependency` que você tenha instalado, como `typescript`, `eslint`, etc.
+
+<Aside type="note">
+Tecnicamente, você também pode configurar um `script` no seu `package.json` para fazer isso. Por exemplo, `"test": "jest"`. Ao rodar `npm run test`, o `npm` também procura em `node_modules/.bin`. O `npx` é útil para executar esses comandos diretamente no terminal sem precisar de um script.
+</Aside>
+
+### Caso 2: Executar Pacotes Remotos (Sem Instalar)
+
+Este é o superpoder mais impressionante do `npx`. Se você executa `npx <pacote>` e esse pacote não está instalado localmente no seu projeto, o `npx` fará o seguinte:
+
+1.  Ele irá baixar temporariamente o pacote do `npm Registry`.
+2.  Executará o comando principal desse pacote.
+3.  Descartará o pacote após a execução, sem deixar lixo na sua máquina.
+
+Isso é perfeito para ferramentas de inicialização de projetos. Por exemplo, quando usamos o Nest CLI para criar um novo projeto:
+
+```bash
+npx @nestjs/cli new meu-projeto
+```
+
+Você não precisa ter o `@nestjs/cli` instalado na sua máquina para rodar este comando. O `npx` baixa a versão mais recente, usa-a para criar o projeto e depois a descarta. Outros exemplos famosos incluem `npx create-react-app` ou `npx degit`.
+
+Em resumo, use `npx` sempre que quiser **executar** algo, seja um pacote já instalado no seu projeto ou uma ferramenta que você só precisa usar uma vez. Isso mantém seus projetos e sua máquina mais limpos e organizados.

@@ -1,0 +1,50 @@
+---
+title: "O que é Node.js? JavaScript no Servidor"
+description: "Descubra o que é o Node.js, como ele permite que o JavaScript seja executado fora do navegador e por que sua arquitetura orientada a eventos é ideal para o backend."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Por muitos anos, o JavaScript foi uma linguagem que vivia exclusivamente nos navegadores de internet. Sua principal função era manipular elementos de uma página web, criar animações e interagir com o usuário. Em 2009, essa realidade mudou com a criação do **Node.js**.
+
+<Card title="Definição" icon="rocket">
+**Node.js** é um ambiente de execução (*runtime environment*) que permite que você execute código JavaScript do lado do servidor. Em outras palavras, ele tirou o JavaScript do navegador e o colocou em uma máquina onde ele pode interagir com o sistema de arquivos, se conectar a bancos de dados e criar aplicações de rede complexas.
+</Card>
+
+## Como o Node.js Funciona?
+
+O Node.js não é uma nova linguagem de programação; ele é construído sobre o **V8**, o mesmo motor de JavaScript de alta performance que o Google usa em seu navegador Chrome. O que o Node.js faz é "embrulhar" o V8 com funcionalidades adicionais, chamadas de APIs, que são essenciais para o desenvolvimento backend.
+
+<CardGrid>
+    <Card title="JavaScript no Navegador">
+        Possui APIs para interagir com a interface do usuário, como:
+        - `window`: Representa a janela do navegador.
+        - `document`: Usado para manipular o conteúdo HTML (o DOM).
+        - `fetch`: Para fazer requisições HTTP a outros servidores.
+    </Card>
+    <Card title="JavaScript com Node.js">
+        Possui APIs para interagir com o sistema do servidor, como:
+        - `fs` (File System): Para ler e escrever arquivos no disco.
+        - `http`: Para criar servidores web e lidar com requisições.
+        - `path`: Para trabalhar com caminhos de arquivos e diretórios.
+        - `process`: Fornece informações sobre o processo atual.
+    </Card>
+</CardGrid>
+
+## A "Mágica" do Node.js: Arquitetura Orientada a Eventos
+
+A principal característica que torna o Node.js tão poderoso para o backend é sua arquitetura **não-bloqueante** e **orientada a eventos**.
+
+Imagine um garçom em um restaurante:
+
+-   **Modelo Bloqueante (Tradicional):** O garçom anota o pedido da Mesa 1, vai até a cozinha, **espera** o prato ficar pronto e só então o entrega. Enquanto isso, as Mesas 2 e 3 estão esperando para serem atendidas.
+-   **Modelo Não-Bloqueante (Node.js):** O garçom anota o pedido da Mesa 1 e o entrega na cozinha. Em vez de esperar, ele imediatamente vai atender a Mesa 2, e depois a 3. Quando um prato fica pronto, a cozinha emite um "evento" (toca um sino), e o garçom vai buscá-lo para entregar.
+
+O Node.js funciona como esse segundo garçom. Ele delega operações lentas (como ler um arquivo do disco ou fazer uma consulta ao banco de dados) para o sistema operacional. Enquanto a operação está em andamento, o Node.js fica livre para lidar com outras requisições. Quando a operação termina, o sistema emite um evento, e o Node.js executa a função de "callback" associada para processar o resultado.
+
+Esse modelo, gerenciado pelo **Event Loop**, torna o Node.js extremamente eficiente para aplicações que precisam lidar com um grande número de conexões simultâneas (como APIs, chats em tempo real e microserviços), que é a maioria das aplicações web modernas.
+
+<Aside type="note">
+O Nest.js, o framework que vamos estudar, é construído sobre o Node.js. Ele não substitui o Node; em vez disso, ele fornece uma camada de abstração e organização sobre as capacidades do Node.js, permitindo-nos construir aplicações complexas de forma estruturada e escalável.
+</Aside>
