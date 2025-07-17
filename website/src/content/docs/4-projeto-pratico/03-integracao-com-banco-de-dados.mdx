@@ -1,0 +1,163 @@
+---
+title: "Passo 3: Persistência com Banco de Dados MongoDB"
+description: "Vamos substituir nosso array em memória por um banco de dados MongoDB real, usando o Mongoose para conectar e manipular nossos dados de forma persistente."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Nossa API funciona, mas toda vez que reiniciamos o servidor, perdemos todas as nossas tarefas. É hora de resolver isso adicionando uma camada de persistência com um banco de dados real. Neste capítulo, usaremos o **MongoDB**, um popular banco de dados NoSQL orientado a documentos, em conjunto com o **Mongoose**, uma biblioteca que facilita a modelagem dos dados da nossa aplicação.
+
+## Pré-requisitos: MongoDB
+
+Você precisará de uma instância do MongoDB rodando. Você pode:
+1.  **Instalar o MongoDB localmente:** Siga o guia oficial em [mongodb.com](https://www.mongodb.com/try/download/community).
+2.  **Usar um contêiner Docker:** Uma maneira rápida e isolada de rodar o MongoDB.
+3.  **Usar um serviço na nuvem:** O [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register) oferece um generoso plano gratuito, ideal para desenvolvimento.
+
+Para este guia, vamos assumir que você tem uma **connection string** do MongoDB pronta, algo como `mongodb://localhost:27017/task-manager`.
+
+1.  **Instalando as Dependências**
+
+    Primeiro, vamos adicionar os pacotes necessários para integrar o Nest.js com o Mongoose:
+    ```bash
+    npm install @nestjs/mongoose mongoose
+    ```
+
+2.  **Configurando a Conexão no Módulo Raiz**
+
+    Precisamos informar ao Nest.js como se conectar ao nosso banco de dados. Faremos isso no `AppModule` (`src/app.module.ts`), importando o `MongooseModule`.
+
+    ```typescript
+    // src/app.module.ts
+    import { Module } from '@nestjs/common';
+    import { MongooseModule } from '@nestjs/mongoose';
+    import { AppController } from './app.controller';
+    import { AppService } from './app.service';
+    import { TasksModule } from './tasks/tasks.module';
+
+    @Module({
+      imports: [
+        // Substitua pela sua connection string
+        MongooseModule.forRoot('mongodb://localhost:27017/task-manager-api'),
+        TasksModule,
+      ],
+      controllers: [AppController],
+      providers: [AppService],
+    })
+    export class AppModule {}
+    ```
+    <Aside type="caution" title="Segurança da Connection String">
+    Colocar a connection string diretamente no código não é uma boa prática. Em um capítulo futuro, aprenderemos a gerenciá-la de forma segura usando variáveis de ambiente. Por enquanto, faremos assim para simplificar.
+    </Aside>
+
+3.  **Criando o Schema e o Model da Tarefa**
+
+    Com o Mongoose, definimos a estrutura dos nossos documentos através de um **Schema**. Crie um novo diretório `src/tasks/schemas` e, dentro dele, o arquivo `task.schema.ts`.
+
+    ```typescript
+    // src/tasks/schemas/task.schema.ts
+    import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+    import { HydratedDocument } from 'mongoose';
+
+    export type TaskDocument = HydratedDocument<Task>;
+
+    @Schema()
+    export class Task {
+      @Prop({ required: true })
+      title: string;
+
+      @Prop()
+      description: string;
+
+      @Prop({ default: false })
+      isDone: boolean;
+    }
+
+    export const TaskSchema = SchemaFactory.createForClass(Task);
+    ```
+
+4.  **Registrando o Model no Módulo de Tarefas**
+
+    Agora, precisamos informar ao `TasksModule` sobre o nosso `TaskSchema`. Isso permitirá que injetemos o "Model" da tarefa em nosso service. Um Model é a interface principal para o banco de dados, permitindo criar, buscar e manipular documentos.
+
+    Modifique o `src/tasks/tasks.module.ts`:
+    ```typescript
+    // src/tasks/tasks.module.ts
+    import { Module } from '@nestjs/common';
+    import { MongooseModule } from '@nestjs/mongoose';
+    import { TasksService } from './tasks.service';
+    import { TasksController } from './tasks.controller';
+    import { Task, TaskSchema } from './schemas/task.schema';
+
+    @Module({
+      imports: [
+        MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
+      ],
+      controllers: [TasksController],
+      providers: [TasksService],
+    })
+    export class TasksModule {}
+    ```
+    O `MongooseModule.forFeature()` registra nosso schema e torna o Model `Task` injetável dentro do escopo do `TasksModule`.
+
+5.  **Refatorando o `TasksService`**
+
+    O último passo é refatorar nosso `TasksService` para usar o Model do Mongoose em vez do array em memória. Vamos injetar o model e substituir toda a lógica.
+
+    ```typescript
+    // src/tasks/tasks.service.ts
+    import { Injectable, NotFoundException } from '@nestjs/common';
+    import { InjectModel } from '@nestjs/mongoose';
+    import { Model } from 'mongoose';
+    import { Task, TaskDocument } from './schemas/task.schema';
+    import { CreateTaskDto } from './dto/create-task.dto';
+    import { UpdateTaskDto } from './dto/update-task.dto';
+
+    @Injectable()
+    export class TasksService {
+      constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>) {}
+
+      async findAll(): Promise<Task[]> {
+        return this.taskModel.find().exec();
+      }
+
+      async findOne(id: string): Promise<Task> {
+        const task = await this.taskModel.findById(id).exec();
+        if (!task) {
+          throw new NotFoundException(`Task with ID "${id}" not found`);
+        }
+        return task;
+      }
+
+      async create(createTaskDto: CreateTaskDto): Promise<Task> {
+        const createdTask = new this.taskModel(createTaskDto);
+        return createdTask.save();
+      }
+
+      async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
+        const updatedTask = await this.taskModel
+          .findByIdAndUpdate(id, updateTaskDto, { new: true }) // { new: true } retorna o documento atualizado
+          .exec();
+          
+        if (!updatedTask) {
+          throw new NotFoundException(`Task with ID "${id}" not found`);
+        }
+        return updatedTask;
+      }
+
+      async remove(id: string): Promise<void> {
+        const result = await this.taskModel.deleteOne({ _id: id }).exec();
+        if (result.deletedCount === 0) {
+          throw new NotFoundException(`Task with ID "${id}" not found`);
+        }
+      }
+    }
+    ```
+    
+    <Aside type="tip" title="Async/Await">
+    Note que todos os nossos métodos agora são `async` e retornam uma `Promise`. Isso ocorre porque as operações de banco de dados são assíncronas; elas levam um tempo para serem concluídas e não bloqueiam a execução do restante do nosso código.
+    </Aside>
+
+Pronto! Se você iniciar sua aplicação agora (`npm run start:dev`) e testar os mesmos endpoints de antes, as tarefas serão salvas e recuperadas do seu banco de dados MongoDB. Elas não serão mais perdidas quando o servidor reiniciar.
+
+No próximo capítulo, vamos adicionar outra peça fundamental ao nosso quebra-cabeça: o **gerenciamento de usuários** e o armazenamento seguro de senhas.

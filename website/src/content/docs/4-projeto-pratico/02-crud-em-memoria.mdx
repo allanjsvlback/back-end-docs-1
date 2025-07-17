@@ -1,0 +1,193 @@
+---
+title: "Passo 2: Criando o CRUD de Tarefas (Em Memória)"
+description: "Vamos implementar as operações de Criar, Ler, Atualizar e Deletar (CRUD) para nossas tarefas, usando um array em memória para simular um banco de dados."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { TabItem, Tabs } from '@astrojs/starlight/components';
+
+Com a estrutura do nosso `TasksModule` pronta, agora vamos implementar a funcionalidade principal: o gerenciamento de tarefas. Para focar na lógica do Nest.js, vamos simular nosso banco de dados com um simples array dentro do `TasksService`.
+
+## 1. Definindo a "Forma" dos Dados: DTOs e Interfaces
+
+Antes de criar e atualizar tarefas, precisamos definir como esses dados devem se parecer.
+
+### A Interface da Tarefa
+
+Primeiro, vamos criar uma interface para representar uma tarefa. Crie um novo diretório `src/tasks/interfaces` e, dentro dele, o arquivo `task.interface.ts`.
+
+```typescript
+// src/tasks/interfaces/task.interface.ts
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  isDone: boolean;
+}
+```
+
+### DTOs para Criação e Atualização
+
+Agora, vamos criar os **DTOs (Data Transfer Objects)**. Eles definirão os dados que esperamos receber no corpo (`body`) das requisições `POST` e `PATCH`. Crie um diretório `src/tasks/dto` e os arquivos abaixo.
+
+<Tabs>
+<TabItem label="create-task.dto.ts">
+```typescript
+// src/tasks/dto/create-task.dto.ts
+export class CreateTaskDto {
+  title: string;
+  description: string;
+}
+```
+</TabItem>
+<TabItem label="update-task.dto.ts">
+```typescript
+// src/tasks/dto/update-task.dto.ts
+export class UpdateTaskDto {
+  title?: string;
+  description?: string;
+  isDone?: boolean;
+}
+```
+> Note que as propriedades são opcionais (`?`), pois o usuário pode querer atualizar apenas um campo.
+</TabItem>
+</Tabs>
+
+## 2. Implementando a Lógica no Service
+
+Agora, vamos abrir o `src/tasks/tasks.service.ts` e adicionar a lógica para manipular um array de tarefas. Para gerar IDs únicos, usaremos a biblioteca `uuid`. Primeiro, instale-a:
+
+```bash
+npm install uuid
+npm install -D @types/uuid
+```
+
+Agora, modifique o `TasksService` para conter toda a lógica do CRUD.
+
+```typescript
+// src/tasks/tasks.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { v4 as uuid } from 'uuid';
+import { Task } from './interfaces/task.interface';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+
+@Injectable()
+export class TasksService {
+  private tasks: Task[] = [];
+
+  findAll(): Task[] {
+    return this.tasks;
+  }
+
+  findOne(id: string): Task {
+    const task = this.tasks.find((task) => task.id === id);
+    if (!task) {
+      throw new NotFoundException(`Task with ID "${id}" not found`);
+    }
+    return task;
+  }
+
+  create(createTaskDto: CreateTaskDto): Task {
+    const newTask: Task = {
+      id: uuid(),
+      ...createTaskDto,
+      isDone: false,
+    };
+    this.tasks.push(newTask);
+    return newTask;
+  }
+
+  update(id: string, updateTaskDto: UpdateTaskDto): Task {
+    const task = this.findOne(id);
+    const updatedTask = Object.assign(task, updateTaskDto);
+    return updatedTask;
+  }
+
+  remove(id: string): void {
+    const taskIndex = this.tasks.findIndex((task) => task.id === id);
+    if (taskIndex === -1) {
+      throw new NotFoundException(`Task with ID "${id}" not found`);
+    }
+    this.tasks.splice(taskIndex, 1);
+  }
+}
+```
+
+<Aside type="tip" title="Exceções do Nest.js">
+Note o uso do `NotFoundException`. O Nest.js possui uma série de exceções HTTP prontas (`BadRequestException`, `UnauthorizedException`, etc.). Quando você lança uma delas, o framework automaticamente envia a resposta HTTP correspondente (neste caso, um status 404).
+</Aside>
+
+## 3. Conectando o Controller ao Service
+
+O passo final é conectar nosso `TasksController` aos métodos que acabamos de criar no `TasksService`. Abra `src/tasks/tasks.controller.ts` e implemente os endpoints.
+
+```typescript
+// src/tasks/tasks.controller.ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { TasksService } from './tasks.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+
+@Controller('tasks')
+export class TasksController {
+  constructor(private readonly tasksService: TasksService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() createTaskDto: CreateTaskDto) {
+    return this.tasksService.create(createTaskDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.tasksService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.tasksService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
+    return this.tasksService.update(id, updateTaskDto);
+  }
+
+
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') id: string) {
+    return this.tasksService.remove(id);
+  }
+}
+```
+
+## 4. Testando a API
+
+Sua API de tarefas agora está funcional! Inicie o servidor em modo de desenvolvimento:
+
+```bash
+npm run start:dev
+```
+
+Você pode usar uma ferramenta como o [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) ou a extensão [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) do VS Code para testar seus endpoints:
+
+-   **`POST /tasks`**: Crie uma nova tarefa enviando um JSON no body.
+-   **`GET /tasks`**: Liste todas as tarefas.
+-   **`GET /tasks/:id`**: Busque uma tarefa específica pelo ID.
+-   **`PATCH /tasks/:id`**: Atualize uma tarefa.
+-   **`DELETE /tasks/:id`**: Delete uma tarefa.
+
+Nossa API funciona, mas tem uma grande limitação: os dados são perdidos toda vez que o servidor reinicia. No próximo capítulo, resolveremos isso integrando nossa aplicação com um banco de dados real usando o **Mongoose**.

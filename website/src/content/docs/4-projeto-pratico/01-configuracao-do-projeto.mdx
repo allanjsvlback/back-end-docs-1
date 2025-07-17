@@ -1,0 +1,117 @@
+---
+title: "Passo 1: Configuração do Projeto e Primeiro Módulo"
+description: "Vamos iniciar nosso projeto prático definindo seus requisitos, criando a estrutura com o Nest CLI e gerando nosso primeiro módulo de funcionalidade para as tarefas."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Bem-vindo à parte prática do nosso guia! Ao longo desta série de capítulos, construiremos uma API completa para um **Gerenciador de Tarefas** (To-Do List) do zero. Esta aplicação nos permitirá aplicar todos os conceitos teóricos que vimos até agora em um cenário do mundo real.
+
+## Requisitos da Nossa API
+
+Antes de escrever qualquer código, é crucial definir o que nossa API precisa fazer. Ela deverá permitir:
+
+-   **Gerenciamento de Usuários:**
+    -   Usuários devem poder se cadastrar na plataforma.
+    -   Usuários devem poder fazer login para obter um token de autenticação.
+-   **Gerenciamento de Tarefas:**
+    -   Um usuário autenticado deve poder criar, listar, visualizar, atualizar e deletar suas próprias tarefas.
+-   **Segurança:**
+    -   As senhas dos usuários devem ser armazenadas de forma segura.
+    -   As rotas de tarefas devem ser protegidas.
+    -   Um usuário **não pode** ver ou modificar as tarefas de outro usuário.
+
+Com esses requisitos em mente, vamos começar.
+
+## Passo a Passo da Configuração
+
+
+1.  **Criando o Projeto**
+
+    Abra seu terminal, navegue até o diretório onde deseja salvar seus projetos e use o Nest CLI para criar uma nova aplicação. Vamos chamá-la de `task-manager-api`.
+
+    ```bash
+    nest new task-manager-api
+    ```
+
+    Quando perguntado sobre qual gerenciador de pacotes usar, escolha `npm` (ou o de sua preferência). Após a conclusão, entre no diretório do projeto:
+
+    ```bash
+    cd task-manager-api
+    ```
+
+2.  **Gerando o Módulo de Tarefas**
+
+    Uma boa prática no Nest.js é organizar a aplicação em módulos por funcionalidade. Nossa principal funcionalidade é o gerenciamento de tarefas, então vamos criar um `TasksModule`.
+
+    Use o comando `generate` (ou seu atalho `g`) do Nest CLI:
+
+    ```bash
+    nest g module tasks
+    ```
+
+    O CLI criará um novo diretório `src/tasks` e, dentro dele, o arquivo `tasks.module.ts`. Ele também atualizará o `app.module.ts` para importar nosso novo módulo automaticamente.
+
+    ```typescript
+    // src/app.module.ts
+    // ...
+    import { TasksModule } from './tasks/tasks.module';
+
+    @Module({
+      imports: [TasksModule], // Adicionado pelo CLI
+      // ...
+    })
+    export class AppModule {}
+    ```
+
+3.  **Gerando o Controller e o Service**
+
+    Agora, dentro do nosso `TasksModule`, precisamos de um `Controller` para lidar com as rotas e um `Service` para a lógica de negócio. O CLI pode fazer isso para nós e já associá-los ao módulo correto.
+
+    Execute os seguintes comandos:
+
+    ```bash
+    nest g controller tasks --no-spec
+    nest g service tasks --no-spec
+    ```
+
+    <Aside type="note" title="A flag --no-spec">
+    Usamos a flag `--no-spec` para dizer ao CLI que, por enquanto, não queremos que ele gere os arquivos de teste (com extensão `.spec.ts`). Focaremos em escrever os testes em um capítulo posterior.
+    </Aside>
+    
+    O CLI fará duas coisas importantes:
+    -   Criará os arquivos `src/tasks/tasks.controller.ts` e `src/tasks/tasks.service.ts`.
+    -   Atualizará o `tasks.module.ts` para declarar o `TasksController` e o `TasksService`.
+
+    Seu `tasks.module.ts` agora deve se parecer com isto:
+
+    ```typescript
+    // src/tasks/tasks.module.ts
+    import { Module } from '@nestjs/common';
+    import { TasksService } from './tasks.service';
+    import { TasksController } from './tasks.controller';
+
+    @Module({
+      controllers: [TasksController],
+      providers: [TasksService],
+    })
+    export class TasksModule {}
+    ```
+    
+## Revisão da Estrutura
+
+Parabéns! Você preparou a fundação do nosso projeto. Nossa estrutura de pastas agora reflete uma organização limpa, com a lógica de tarefas devidamente encapsulada em seu próprio módulo:
+
+```
+src/
+├── app.controller.ts
+├── app.module.ts
+├── app.service.ts
+├── main.ts
+└── tasks/
+    ├── tasks.controller.ts
+    ├── tasks.module.ts
+    └── tasks.service.ts
+```
+
+Temos tudo pronto para começar a implementar a funcionalidade principal da nossa API. No próximo capítulo, vamos construir o **CRUD (Create, Read, Update, Delete)** completo para as tarefas, utilizando, por enquanto, um armazenamento em memória.

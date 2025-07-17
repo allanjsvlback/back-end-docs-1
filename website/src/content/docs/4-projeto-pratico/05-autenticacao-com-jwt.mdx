@@ -1,0 +1,189 @@
+---
+title: "Passo 5: Implementando Autenticação com JWT e Passport"
+description: "Vamos criar um sistema de login robusto usando Passport.js para a estratégia de autenticação e JSON Web Tokens (JWT) para gerar credenciais de acesso seguras."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Agora que os usuários podem se registrar, precisamos de uma forma para que eles façam login. O processo de login validará suas credenciais (email e senha) e, se estiverem corretas, fornecerá a eles um "passaporte" para acessar as partes protegidas da nossa API.
+
+Esse passaporte será um **JSON Web Token (JWT)**.
+
+Para orquestrar tudo isso, usaremos duas bibliotecas poderosas do ecossistema Nest.js:
+-   **`@nestjs/passport`**: Uma camada de abstração sobre a popular biblioteca [Passport.js](http://www.passportjs.org/), que facilita a implementação de diferentes estratégias de autenticação.
+-   **`@nestjs/jwt`**: Uma biblioteca para gerar e verificar tokens JWT.
+
+---
+
+1.  **Instalando as Dependências**
+
+    Vamos começar instalando todos os pacotes necessários:
+    ```bash
+    npm install @nestjs/passport @nestjs/jwt passport passport-local
+    npm install -D @types/passport-local
+    ```
+
+2.  **Criando o Módulo de Autenticação (`AuthModule`)**
+
+    É uma boa prática encapsular toda a lógica de autenticação em seu próprio módulo. Vamos criar um `AuthModule` que irá coordenar o `UsersModule` (para encontrar usuários) e o `JwtModule` (para criar tokens).
+
+    Primeiro, gere o módulo e o serviço:
+    ```bash
+    nest g module auth
+    nest g service auth --no-spec
+    ```
+
+    Agora, configure o `src/auth/auth.module.ts`. Ele precisa importar o `UsersModule` para ter acesso ao `UsersService` e configurar o `JwtModule`.
+
+    ```typescript
+    // src/auth/auth.module.ts
+    import { Module } from '@nestjs/common';
+    import { JwtModule } from '@nestjs/jwt';
+    import { PassportModule } from '@nestjs/passport';
+    import { UsersModule } from '../users/users.module'; // Importa o UsersModule
+    import { AuthService } from './auth.service';
+
+    @Module({
+      imports: [
+        UsersModule, // Para podermos usar o UsersService
+        PassportModule,
+        JwtModule.register({
+          secret: 'SEU_SEGREDO_SUPER_SECRETO', // !! Mude isso e coloque em variáveis de ambiente !!
+          signOptions: { expiresIn: '60m' }, // Token expira em 60 minutos
+        }),
+      ],
+      providers: [AuthService],
+    })
+    export class AuthModule {}
+    ```
+    <Aside type="caution" title="Segredo do JWT">
+    O `secret` é a chave usada para assinar os tokens. **Ele nunca deve ser exposto no código-fonte**. Em um capítulo posterior, moveremos isso para variáveis de ambiente.
+    </Aside>
+
+3.  **Implementando a Lógica de Login no `AuthService`**
+
+    O `AuthService` terá duas responsabilidades principais:
+    a.  **Validar o usuário**: Verificar se o email existe e se a senha fornecida corresponde à senha hasheada no banco.
+    b.  **Gerar o token**: Se a validação for bem-sucedida, criar e retornar um token JWT.
+
+    Modifique o `src/auth/auth.service.ts`:
+    ```typescript
+    // src/auth/auth.service.ts
+    import { Injectable, UnauthorizedException } from '@nestjs/common';
+    import { JwtService } from '@nestjs/jwt';
+    import * as bcrypt from 'bcrypt';
+    import { UsersService } from '../users/users.service'; // Importamos o serviço de usuários
+    import { User } from '../users/schemas/user.schema';
+
+    @Injectable()
+    export class AuthService {
+      constructor(
+        private usersService: UsersService,
+        private jwtService: JwtService,
+      ) {}
+
+      // 1. Validação do usuário
+      async validateUser(email: string, pass: string): Promise<any> {
+        const user = await this.usersService.findOneByEmail(email); // Precisaremos criar este método no UsersService
+        if (user && (await bcrypt.compare(pass, user.password))) {
+          const { password, ...result } = user.toObject();
+          return result;
+        }
+        return null;
+      }
+
+      // 2. Geração do token
+      async login(user: User) {
+        const payload = { email: user.email, sub: user._id }; // `sub` é o padrão para "subject" (ID do usuário)
+        return {
+          access_token: this.jwtService.sign(payload),
+        };
+      }
+    }
+    ```
+    
+    <Aside type="tip" title="Atualize o UsersService">
+    O método `validateUser` acima precisa de um método `findOneByEmail` no `UsersService`. Abra o `src/users/users.service.ts` e adicione-o:
+    ```typescript
+    // Dentro de UsersService
+    async findOneByEmail(email: string): Promise<UserDocument | undefined> {
+      return this.userModel.findOne({ email }).exec();
+    }
+    ```
+    Não se esqueça de também exportar o `UsersService` no `UsersModule` para que o `AuthModule` possa usá-lo:
+    ```typescript
+    // Em src/users/users.module.ts
+    // ...
+    providers: [UsersService],
+    exports: [UsersService], // Adicione esta linha
+    // ...
+    ```
+    </Aside>
+
+4.  **Criando a Estratégia Local (LocalStrategy)**
+
+    Uma "estratégia" do Passport é uma classe que encapsula a lógica de autenticação. A `LocalStrategy` é usada para o login clássico com email/senha.
+
+    Crie o arquivo `src/auth/strategies/local.strategy.ts`:
+    ```typescript
+    // src/auth/strategies/local.strategy.ts
+    import { Strategy } from 'passport-local';
+    import { PassportStrategy } from '@nestjs/passport';
+    import { Injectable, UnauthorizedException } from '@nestjs/common';
+    import { AuthService } from '../auth.service';
+
+    @Injectable()
+    export class LocalStrategy extends PassportStrategy(Strategy) {
+      constructor(private authService: AuthService) {
+        super({ usernameField: 'email' }); // Dizendo ao Passport que usaremos 'email' em vez do padrão 'username'
+      }
+
+      async validate(email: string, password: string): Promise<any> {
+        const user = await this.authService.validateUser(email, password);
+        if (!user) {
+          throw new UnauthorizedException();
+        }
+        return user;
+      }
+    }
+    ```
+    Agora, registre a `LocalStrategy` como um provider no `AuthModule`:
+    ```typescript
+    // Em src/auth/auth.module.ts, dentro do objeto @Module
+    // ...
+    providers: [AuthService, LocalStrategy],
+    // ...
+    ```
+
+5.  **Criando o Endpoint de Login**
+
+    Finalmente, vamos criar um `AuthController` para expor o endpoint de login.
+    ```bash
+    nest g controller auth --no-spec
+    ```
+
+    Implemente o `src/auth/auth.controller.ts`:
+    ```typescript
+    // src/auth/auth.controller.ts
+    import { Controller, Post, UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
+    import { AuthGuard } from '@nestjs/passport';
+    import { AuthService } from './auth.service';
+    import { User } from '../users/schemas/user.schema';
+
+    @Controller('auth')
+    export class AuthController {
+      constructor(private authService: AuthService) {}
+
+      @UseGuards(AuthGuard('local')) // Ativa a LocalStrategy
+      @Post('login')
+      @HttpCode(HttpStatus.OK)
+      async login(@Request() req: { user: User }) {
+        return this.authService.login(req.user);
+      }
+    }
+    ```
+    O `@UseGuards(AuthGuard('local'))` é o que aciona todo o fluxo. Ele executa nossa `LocalStrategy`, que por sua vez chama o `validateUser` do `AuthService`. Se tudo der certo, o objeto `user` é anexado à requisição e nosso método `login` é chamado.
+
+Sua rota de login (`POST /auth/login`) está pronta! Ao enviar um email e senha válidos, a API agora retornará um `access_token`.
+
+No próximo capítulo, usaremos esse token para proteger nossas rotas de tarefas e garantir que um usuário só possa acessar seus próprios dados.

@@ -1,0 +1,211 @@
+---
+title: "Passo 8: Configuração de Ambiente e Escrevendo Testes"
+description: "Vamos finalizar nossa API implementando boas práticas de configuração com variáveis de ambiente e garantindo sua qualidade e manutenibilidade com testes unitários e E2E."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Neste capítulo final, vamos dar dois passos cruciais que separam um projeto de desenvolvimento de uma aplicação pronta para produção: configuração externa e testes automatizados.
+
+## 1. Gerenciamento de Configuração com `.env`
+
+Atualmente, temos dados sensíveis (a connection string do MongoDB e o segredo do JWT) diretamente no nosso código. Isso é uma má prática de segurança e torna difícil configurar a aplicação para diferentes ambientes (desenvolvimento, produção).
+
+Vamos resolver isso usando o módulo `@nestjs/config`.
+
+1.  **Instalando a Dependência**
+    ```bash
+    npm install @nestjs/config
+    ```
+
+2.  **Criando o Arquivo `.env`**
+
+    Na raiz do seu projeto, crie um arquivo chamado `.env`. Este arquivo conterá nossas variáveis de ambiente.
+    
+    ```bash
+    # .env
+
+    MONGO_URI=mongodb://localhost:27017/task-manager-api
+    JWT_SECRET=MEU_SEGREDO_FINALMENTE_SEGURO_E_MUITO_LONGO
+    ```
+    
+    <Aside type="caution" title="gitignore">
+    **Muito importante:** Adicione o arquivo `.env` ao seu `.gitignore` para garantir que ele nunca seja enviado para o seu repositório Git!
+    ```bash
+    # .gitignore
+    
+    # ... outros
+    .env
+    ```
+    </Aside>
+
+3.  **Configurando o `ConfigModule`**
+
+    Importe e configure o `ConfigModule` no nosso `AppModule`. A flag `isGlobal: true` o torna disponível em toda a aplicação sem precisar importá-lo em cada módulo.
+
+    ```typescript
+    // src/app.module.ts
+    import { ConfigModule } from '@nestjs/config';
+
+    @Module({
+      imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        // ...
+      ],
+      // ...
+    })
+    export class AppModule {}
+    ```
+
+4.  **Usando as Variáveis de Ambiente**
+
+    Agora, podemos injetar o `ConfigService` e usar as variáveis. Vamos atualizar o `AppModule` e o `AuthModule`.
+
+    *   **Em `src/app.module.ts` (para o Mongoose):**
+        ```typescript
+        // src/app.module.ts
+        import { ConfigModule, ConfigService } from '@nestjs/config';
+        import { MongooseModule } from '@nestjs/mongoose';
+
+        @Module({
+          imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            MongooseModule.forRootAsync({
+              imports: [ConfigModule],
+              inject: [ConfigService],
+              useFactory: async (configService: ConfigService) => ({
+                uri: configService.get<string>('MONGO_URI'),
+              }),
+            }),
+            // ...
+          ],
+        })
+        ```
+    *   **Em `src/auth/auth.module.ts` (para o JWT):**
+        ```typescript
+        // src/auth/auth.module.ts
+        import { ConfigModule, ConfigService } from '@nestjs/config';
+        import { JwtModule } from '@nestjs/jwt';
+
+        @Module({
+          imports: [
+            // ...
+            JwtModule.registerAsync({
+              imports: [ConfigModule],
+              inject: [ConfigService],
+              useFactory: async (configService: ConfigService) => ({
+                secret: configService.get<string>('JWT_SECRET'),
+                signOptions: { expiresIn: '60m' },
+              }),
+            }),
+          ],
+        })
+        ```
+    O mesmo deve ser feito na `JwtStrategy` para ler o segredo.
+
+## 2. Escrevendo Testes Automatizados
+
+Testes são a rede de segurança da sua aplicação. Eles garantem que novas alterações não quebrem funcionalidades existentes. O Nest.js usa o **Jest** como framework de testes e fornece utilitários para facilitar o processo.
+
+### Teste Unitário (`.spec.ts`)
+
+Um teste unitário testa uma única "unidade" (uma classe, como um service) de forma isolada, "mockando" (simulando) suas dependências.
+
+Vamos criar um teste para o `TasksService`. Crie o arquivo `src/tasks/tasks.service.spec.ts`:
+```typescript
+// src/tasks/tasks.service.spec.ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { TasksService } from './tasks.service';
+import { getModelToken } from '@nestjs/mongoose';
+import { Task } from './schemas/task.schema';
+
+describe('TasksService', () => {
+  let service: TasksService;
+
+  // Mock do nosso TaskModel
+  const mockTaskModel = {
+    find: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([{ title: 'Mock Task' }]),
+    }),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TasksService,
+        {
+          provide: getModelToken(Task.name),
+          useValue: mockTaskModel,
+        },
+      ],
+    }).compile();
+
+    service = module.get<TasksService>(TasksService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  it('should return an array of tasks', async () => {
+    const userId = 'some-user-id';
+    expect(await service.findAll(userId)).toEqual([{ title: 'Mock Task' }]);
+    expect(mockTaskModel.find).toHaveBeenCalledWith({ owner: userId });
+  });
+});
+```
+Para rodar os testes unitários:
+```bash
+npm run test
+```
+
+### Teste End-to-End (`.e2e-spec.ts`)
+
+Testes E2E testam a aplicação como um todo, fazendo requisições HTTP reais e verificando as respostas. O Nest CLI já cria um arquivo de exemplo em `test/app.e2e-spec.ts`.
+
+Vamos criar um novo arquivo `test/tasks.e2e-spec.ts` para testar nosso endpoint `GET /tasks` (protegido).
+```typescript
+// test/tasks.e2e-spec.ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
+
+describe('TasksController (e2e)', () => {
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/tasks (GET) should return 401 Unauthorized without a token', () => {
+    return request(app.getHttpServer())
+      .get('/tasks')
+      .expect(401);
+  });
+
+  // Testes mais complexos aqui envolveriam criar um usuário, fazer login para obter um token,
+  // e então usar esse token para fazer a requisição GET.
+});
+```
+Para rodar os testes E2E:
+```bash
+npm run test:e2e
+```
+
+## Conclusão do Projeto
+
+Até aqui, se você seguiu todos os passos sem pular nenhum, você aprendeu a:
+-   Estruturar uma aplicação com Módulos, Controllers e Services.
+-   Implementar um CRUD completo.
+-   Integrar com um banco de dados MongoDB.
+-   Armazenar senhas de forma segura.
+-   Implementar um fluxo de autenticação e autorização com JWT.
+-   Validar dados de entrada de forma robusta.
+-   Gerenciar configurações de forma segura.
+-   Escrever testes unitários e E2E.

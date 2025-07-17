@@ -1,0 +1,170 @@
+---
+title: "Passo 4: Gerenciamento de Usuários e Segurança de Senhas"
+description: "Vamos criar a funcionalidade de registro de usuários, adicionando um novo módulo e garantindo que as senhas sejam armazenadas de forma segura usando hashing com bcrypt."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Nossa API já gerencia tarefas, mas por enquanto, todas as tarefas são anônimas e públicas. O próximo passo lógico é introduzir o conceito de **Usuários**. Precisamos de uma forma para que as pessoas se cadastrem na nossa plataforma.
+
+Este capítulo foca em duas coisas:
+- Criar a estrutura para gerenciar usuários (módulo, controller, service, schema).
+- Implementar a prática de segurança mais fundamental: **nunca armazenar senhas em texto plano**.
+
+---
+
+1.  **Criando o Módulo de Usuários**
+
+    Assim como fizemos para as tarefas, vamos usar o Nest CLI para gerar toda a estrutura para a funcionalidade de usuários.
+
+    ```bash
+    nest g module users
+    nest g controller users --no-spec
+    nest g service users --no-spec
+    ```
+    Isso criará o diretório `src/users` com todos os arquivos necessários e registrará o `UsersModule` no `app.module.ts`.
+
+2.  **Definindo o Schema e o DTO do Usuário**
+
+    Primeiro, vamos definir o schema do nosso usuário em `src/users/schemas/user.schema.ts`.
+
+    ```typescript
+    // src/users/schemas/user.schema.ts
+    import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+    import { HydratedDocument } from 'mongoose';
+
+    export type UserDocument = HydratedDocument<User>;
+
+    @Schema()
+    export class User {
+      @Prop({ required: true, unique: true })
+      email: string;
+
+      @Prop({ required: true })
+      name: string;
+
+      @Prop({ required: true })
+      password: string;
+    }
+
+    export const UserSchema = SchemaFactory.createForClass(User);
+    ```
+    <Aside type="note">
+    Note o `unique: true` no campo `email`. Isso cria um índice único no MongoDB, garantindo que não possamos ter dois usuários com o mesmo endereço de e-mail.
+    </Aside>
+
+    Agora, o DTO para o registro em `src/users/dto/create-user.dto.ts`:
+    ```typescript
+    // src/users/dto/create-user.dto.ts
+    export class CreateUserDto {
+      email: string;
+      name: string;
+      password: string;
+    }
+    ```
+
+3.  **Segurança de Senhas com `bcrypt`**
+
+    Armazenar senhas como texto puro é uma falha de segurança gravíssima. Se o banco de dados for comprometido, todas as senhas dos usuários serão expostas. A solução é usar uma técnica chamada **hashing**.
+
+    Um hash é um algoritmo de mão única: é fácil transformar uma senha em um hash, mas é computacionalmente impossível reverter o processo. Usaremos a biblioteca `bcrypt`, que é o padrão da indústria para isso.
+
+    Primeiro, instale as dependências:
+    ```bash
+    npm install bcrypt
+    npm install -D @types/bcrypt
+    ```
+
+4.  **Implementando o `UsersService` e o `UsersController`**
+
+    Agora, vamos implementar a lógica para criar um usuário. Registre o `UserSchema` no `UsersModule` primeiro:
+
+    ```typescript
+    // src/users/users.module.ts
+    import { Module } from '@nestjs/common';
+    import { MongooseModule } from '@nestjs/mongoose';
+    import { UsersService } from './users.service';
+    import { UsersController } from './users.controller';
+    import { User, UserSchema } from './schemas/user.schema';
+
+    @Module({
+      imports: [
+        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+      ],
+      controllers: [UsersController],
+      providers: [UsersService],
+    })
+    export class UsersModule {}
+    ```
+
+    Em seguida, implemente o `UsersService` para criar o usuário e fazer o hash da senha:
+
+    ```typescript
+    // src/users/users.service.ts
+    import { Injectable, ConflictException } from '@nestjs/common';
+    import { InjectModel } from '@nestjs/mongoose';
+    import { Model } from 'mongoose';
+    import * as bcrypt from 'bcrypt';
+    import { User, UserDocument } from './schemas/user.schema';
+    import { CreateUserDto } from './dto/create-user.dto';
+
+    @Injectable()
+    export class UsersService {
+      constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+
+      async create(createUserDto: CreateUserDto): Promise<User> {
+        const { email, name, password } = createUserDto;
+
+        // 1. Fazer o hash da senha
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // 2. Criar o novo usuário com a senha hasheada
+        const newUser = new this.userModel({
+          email,
+          name,
+          password: hashedPassword,
+        });
+
+        // 3. Salvar o usuário
+        try {
+          return await newUser.save();
+        } catch (error) {
+          // Lida com o erro de email duplicado (código 11000)
+          if (error.code === 11000) {
+            throw new ConflictException('Email already exists');
+          }
+          throw error;
+        }
+      }
+    }
+    ```
+
+    Por fim, crie o endpoint no `UsersController`:
+    ```typescript
+    // src/users/users.controller.ts
+    import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+    import { UsersService } from './users.service';
+    import { CreateUserDto } from './dto/create-user.dto';
+
+    @Controller('users')
+    export class UsersController {
+      constructor(private readonly usersService: UsersService) {}
+
+      @Post()
+      @HttpCode(HttpStatus.CREATED)
+      create(@Body() createUserDto: CreateUserDto) {
+        // Ocultar a senha na resposta
+        const { password, ...user } = this.usersService.create(createUserDto) as any;
+        return user;
+      }
+    }
+    ```
+    <Aside type="caution" title="Segurança na Resposta">
+    Mesmo que a senha esteja hasheada, é uma boa prática nunca retorná-la em uma resposta de API. No controller acima, estamos removendo o campo `password` do objeto antes de enviá-lo de volta ao cliente. Veremos maneiras mais elegantes de fazer isso mais tarde.
+    </Aside>
+
+
+Agora você pode iniciar sua aplicação (`npm run start:dev`) e usar o endpoint `POST /users` para criar novos usuários. Se você inspecionar seu banco de dados, verá que o campo `password` contém uma string longa e complexa, e não a senha original.
+
+Com o registro de usuários funcionando, estamos prontos para o próximo passo crucial: permitir que eles façam login. No próximo capítulo, implementaremos a **autenticação com JWT e Passport.js**.

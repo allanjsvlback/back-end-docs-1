@@ -71,6 +71,10 @@ export default defineConfig({
 						{ label: 'O Fluxo de uma Requisição (Lifecycle)', link: '3-arquitetura-e-conceitos/5-request-lifecycle' },
 					],
 				},
+				{
+					label: 'Projeto Prático: API de Gerenciador de Tarefas',
+					autogenerate: { directory: '4-projeto-pratico' }
+				},
 			],
 		}),
 	],

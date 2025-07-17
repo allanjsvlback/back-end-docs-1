@@ -1,0 +1,115 @@
+---
+title: "Passo 7: Validação de Dados e Tratamento de Erros"
+description: "Vamos aumentar a robustez da nossa API implementando validação automática de dados de entrada com Pipes e DTOs, e entendendo como o Nest.js lida com exceções."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Atualmente, nossa API confia cegamente nos dados que recebe. Se um cliente enviar um pedido para criar uma tarefa sem um `title`, por exemplo, nosso código pode quebrar ou salvar dados inconsistentes no banco.
+
+Para resolver isso, vamos usar um dos recursos mais poderosos do Nest.js: os **Pipes**, especificamente o `ValidationPipe`, para validar automaticamente os dados de entrada com base nos nossos DTOs.
+
+1.  **Instalando as Dependências de Validação**
+
+    O `ValidationPipe` do Nest.js funciona em conjunto com duas bibliotecas muito populares: `class-validator` e `class-transformer`. Vamos instalá-las:
+
+    ```bash
+    npm install class-validator class-transformer
+    ```
+
+2.  **Adicionando Decorators de Validação aos DTOs**
+
+    Agora, podemos "decorar" as propriedades dos nossos DTOs para definir as regras de validação. Vamos começar com o `CreateTaskDto`.
+
+    ```typescript
+    // src/tasks/dto/create-task.dto.ts
+    import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+
+    export class CreateTaskDto {
+      @IsString()
+      @IsNotEmpty()
+      @MinLength(3)
+      title: string;
+
+      @IsString()
+      description: string;
+    }
+    ```
+    Aqui, estamos dizendo que o `title` deve ser uma string, não pode estar vazio e deve ter no mínimo 3 caracteres.
+
+    Vamos fazer o mesmo para o `CreateUserDto`, adicionando validações para email e senha:
+    ```typescript
+    // src/users/dto/create-user.dto.ts
+    import { IsEmail, IsString, MinLength } from 'class-validator';
+
+    export class CreateUserDto {
+      @IsEmail()
+      email: string;
+
+      @IsString()
+      @MinLength(2)
+      name: string;
+      
+      @IsString()
+      @MinLength(8, { message: 'Password must be at least 8 characters long' })
+      password: string;
+    }
+    ```
+    <Aside type="tip" title="Mensagens de Erro Customizadas">
+    Você pode passar um objeto de opções para a maioria dos decorators de validação para customizar a mensagem de erro, como fizemos com o `@MinLength` da senha.
+    </Aside>
+
+3.  **Ativando o `ValidationPipe` Globalmente**
+
+    Para que essas regras sejam aplicadas, precisamos dizer ao Nest.js para usar o `ValidationPipe`. A melhor maneira de fazer isso é globalmente, no nosso arquivo `main.ts`, para que ele se aplique a todas as rotas da nossa aplicação.
+
+    Modifique o `src/main.ts`:
+    ```typescript
+    // src/main.ts
+    import { NestFactory } from '@nestjs/core';
+    import { ValidationPipe } from '@nestjs/common';
+    import { AppModule } from './app.module';
+
+    async function bootstrap() {
+      const app = await NestFactory.create(AppModule);
+
+      // Ativa o ValidationPipe globalmente
+      app.useGlobalPipes(
+        new ValidationPipe({
+          whitelist: true, // Remove propriedades que não estão no DTO
+          forbidNonWhitelisted: true, // Lança um erro se propriedades extras forem enviadas
+          transform: true, // Transforma o payload para o tipo do DTO
+        }),
+      );
+
+      await app.listen(3000);
+    }
+    bootstrap();
+    ```
+    
+    Com essa configuração:
+    -   Se você tentar criar uma tarefa sem `title` ou com um `title` muito curto, a API retornará automaticamente um erro `400 Bad Request` com uma mensagem detalhada sobre o que está errado.
+    -   **`whitelist: true`**: Se o cliente enviar uma propriedade que não existe no DTO (ex: `priority: 'high'`), ela será removidamente silenciosamente do objeto `body` antes de chegar ao seu controller.
+    -   **`forbidNonWhitelisted: true`**: É ainda mais restritivo. Se uma propriedade extra for enviada, a API retornará um erro, informando ao cliente que ele está enviando dados não permitidos.
+
+4.  **Entendendo o Tratamento de Erros**
+
+    O Nest.js possui uma camada de tratamento de exceções integrada. Já a vimos em ação quando usamos o `NotFoundException`.
+
+    Quando o `ValidationPipe` falha, ele internamente lança uma `BadRequestException`. O Nest a captura e a transforma em uma resposta JSON padronizada:
+
+    ```json
+    {
+      "statusCode": 400,
+      "message": [
+        "title must be longer than or equal to 3 characters"
+      ],
+      "error": "Bad Request"
+    }
+    ```
+    
+    Este mecanismo é muito poderoso. A maior parte do tempo, você só precisará lançar as exceções HTTP padrão do `@nestjs/common` (como `NotFoundException`, `ConflictException`, `UnauthorizedException`) e o Nest cuidará de formatar a resposta de erro para você.
+
+    **Filtros de Exceção (Exception Filters)**
+
+    Se você precisar de um formato de erro customizado para toda a sua aplicação (por exemplo, para seguir um padrão específico da sua empresa), você pode criar um **Filtro de Exceção** global. Ele intercepta todas as exceções lançadas e permite que você formate a resposta HTTP da maneira que desejar. Não precisaremos criar um para este projeto, mas é importante saber que o recurso existe para cenários mais avançados.

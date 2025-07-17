@@ -1,0 +1,156 @@
+---
+title: "Passo 6: Protegendo Rotas e Autorização por Usuário"
+description: "Vamos usar nosso token JWT para proteger os endpoints de tarefas e implementar a lógica de autorização para garantir que os usuários só possam acessar e modificar suas próprias tarefas."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Atualmente, qualquer pessoa (autenticada ou não) pode acessar todos os endpoints de tarefas. Além disso, as tarefas não "pertencem" a ninguém. Neste capítulo, vamos resolver esses dois problemas:
+
+-  **Autenticação**: Exigir um token JWT válido para acessar as rotas de tarefas.
+-  **Autorização**: Garantir que as operações CRUD em tarefas afetem apenas os dados do usuário autenticado.
+
+---
+
+1.  **Criando a Estratégia JWT (`JwtStrategy`)**
+
+    Assim como a `LocalStrategy` validava email/senha, a `JwtStrategy` validará o token JWT enviado em cada requisição. O Passport irá extrair o token do cabeçalho da requisição, decodificá-lo e verificar sua assinatura usando nosso segredo.
+
+    Crie o arquivo `src/auth/strategies/jwt.strategy.ts`:
+    ```typescript
+    // src/auth/strategies/jwt.strategy.ts
+    import { ExtractJwt, Strategy } from 'passport-jwt';
+    import { PassportStrategy } from '@nestjs/passport';
+    import { Injectable } from '@nestjs/common';
+
+    @Injectable()
+    export class JwtStrategy extends PassportStrategy(Strategy) {
+      constructor() {
+        super({
+          jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+          ignoreExpiration: false,
+          secretOrKey: 'SEU_SEGREDO_SUPER_SECRETO', // !! Use o mesmo segredo do AuthModule !!
+        });
+      }
+
+      async validate(payload: any) {
+        // O payload é o objeto que usamos para criar o token (email e sub)
+        // O que for retornado aqui será anexado ao objeto `request.user`
+        return { userId: payload.sub, email: payload.email };
+      }
+    }
+    ```
+    Agora, registre a `JwtStrategy` como um provider no `AuthModule`:
+    ```typescript
+    // Em src/auth/auth.module.ts
+    // ...
+    import { JwtStrategy } from './strategies/jwt.strategy';
+    // ...
+    providers: [AuthService, LocalStrategy, JwtStrategy], // Adicione a JwtStrategy
+    // ...
+    ```
+
+2.  **Protegendo os Endpoints de Tarefas**
+
+    Proteger as rotas agora é incrivelmente simples. Vamos ao `TasksController` e adicionamos um `Guard` a nível de classe. Isso fará com que todos os endpoints dentro deste controller exijam um token JWT válido.
+
+    ```typescript
+    // src/tasks/tasks.controller.ts
+    import { Controller, UseGuards /* ... outros imports */ } from '@nestjs/common';
+    import { AuthGuard } from '@nestjs/passport';
+
+    @UseGuards(AuthGuard('jwt')) // Protege todos os endpoints deste controller
+    @Controller('tasks')
+    export class TasksController {
+      // ... resto do controller
+    }
+    ```
+    Se você tentar acessar `GET /tasks` agora sem fornecer um token "Bearer" no cabeçalho `Authorization`, receberá um erro `401 Unauthorized`.
+
+3.  **Associando Tarefas a Usuários**
+
+    Nossas tarefas precisam saber a quem pertencem. Para isso, vamos criar um relacionamento entre as entidades `Task` e `User`.
+
+    Primeiro, atualize o `src/tasks/schemas/task.schema.ts` para incluir um campo `owner` que referencia um `User`.
+
+    ```typescript
+    // src/tasks/schemas/task.schema.ts
+    import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+    import mongoose, { HydratedDocument } from 'mongoose';
+    import { User } from '../../users/schemas/user.schema';
+
+    export type TaskDocument = HydratedDocument<Task>;
+
+    @Schema()
+    export class Task {
+      // ... outras propriedades
+      
+      @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+      owner: User;
+    }
+
+    export const TaskSchema = SchemaFactory.createForClass(Task);
+    ```
+
+4.  **Implementando a Lógica de Autorização no `TasksService`**
+
+    Agora, precisamos ajustar o `TasksService` para que ele sempre considere o usuário autenticado.
+
+    Primeiro, vamos modificar o método `create` para associar a nova tarefa ao usuário que a está criando.
+
+    ```typescript
+    // Em src/tasks/tasks.service.ts
+    // ...
+    // O método `create` precisa saber quem é o usuário. Vamos passar o `userId`.
+    async create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
+      const taskData = {
+        ...createTaskDto,
+        owner: userId, // Associando a tarefa ao usuário
+      };
+      const createdTask = new this.taskModel(taskData);
+      return createdTask.save();
+    }
+    ```
+    
+    Agora, no `TasksController`, precisamos obter o `userId` do `request.user` (que a `JwtStrategy` nos deu) e passá-lo para o serviço.
+
+    ```typescript
+    // Em src/tasks/tasks.controller.ts
+    import { Request /* ... */ } from '@nestjs/common';
+    // ...
+    @Post()
+    @HttpCode(HttpStatus.CREATED)
+    create(@Body() createTaskDto: CreateTaskDto, @Request() req) {
+      // req.user é populado pela JwtStrategy
+      const userId = req.user.userId; 
+      return this.tasksService.create(createTaskDto, userId);
+    }
+    ```
+    
+    <Aside type="tip" title="Criando um Decorator Customizado">
+    Passar o objeto `@Request()` inteiro só para pegar o usuário é um pouco verboso. Em um projeto real, você pode criar um decorator customizado, como `@GetUser()`, para injetar diretamente o objeto `user` nos seus métodos de controller.
+    </Aside>
+    
+    Por fim, vamos garantir que todas as outras operações (`findAll`, `findOne`, `update`, `remove`) só afetem as tarefas que pertencem ao usuário logado.
+
+    ```typescript
+    // Em src/tasks/tasks.service.ts
+    
+    // O método findAll precisa do userId
+    async findAll(userId: string): Promise<Task[]> {
+      return this.taskModel.find({ owner: userId }).exec();
+    }
+    
+    // O método findOne precisa do userId para garantir que o usuário não acesse a tarefa de outro
+    async findOne(id: string, userId: string): Promise<Task> {
+      const task = await this.taskModel.findOne({ _id: id, owner: userId }).exec();
+      if (!task) {
+        throw new NotFoundException(`Task with ID "${id}" not found`);
+      }
+      return task;
+    }
+    
+    // ... e o mesmo para update e remove, sempre adicionando a condição `{ owner: userId }`
+    // ... e passando o `userId` do controller para o service em todos os métodos.
+    ```
+    Você precisará atualizar as assinaturas e chamadas no `TasksController` e `TasksService` para todos os métodos CRUD, garantindo que o `userId` seja sempre considerado.
