@@ -7,7 +7,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 Atualmente, nossa API confia cegamente nos dados que recebe. Se um cliente enviar um pedido para criar uma tarefa sem um `title`, por exemplo, nosso código pode quebrar ou salvar dados inconsistentes no banco.
 
-Para resolver isso, vamos usar um dos recursos mais poderosos do Nest.js: os **Pipes**, especificamente o `ValidationPipe`, para validar automaticamente os dados de entrada com base nos nossos DTOs.
+Para resolver isso, vamos usar um dos recursos mais legais do Nest.js: os **Pipes**, especificamente o `ValidationPipe`, para validar automaticamente os dados de entrada com base nos nossos DTOs.
 
 1.  **Instalando as Dependências de Validação**
 
@@ -108,7 +108,7 @@ Para resolver isso, vamos usar um dos recursos mais poderosos do Nest.js: os **P
     }
     ```
     
-    Este mecanismo é muito poderoso. A maior parte do tempo, você só precisará lançar as exceções HTTP padrão do `@nestjs/common` (como `NotFoundException`, `ConflictException`, `UnauthorizedException`) e o Nest cuidará de formatar a resposta de erro para você.
+    Este mecanismo é muito massa. A maior parte do tempo, você só precisará lançar as exceções HTTP padrão do `@nestjs/common` (como `NotFoundException`, `ConflictException`, `UnauthorizedException`) e o Nest cuidará de formatar a resposta de erro para você.
 
     **Filtros de Exceção (Exception Filters)**
 

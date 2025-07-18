@@ -1,0 +1,43 @@
+---
+title: "Visão Geral: Os 4 Pilares da Orientação a Objetos"
+description: "Conheça os quatro pilares fundamentais da Programação Orientada a Objetos: Encapsulamento, Herança, Polimorfismo e Abstração."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+A Programação Orientada a Objetos é sustentada por quatro conceitos principais, frequentemente chamados de "os quatro pilares". Eles não são regras rígidas, mas sim princípios que, quando combinados, permitem criar software flexível e de fácil manutenção.
+
+Dominar esses quatro pilares é o que realmente significa "pensar de forma orientada a objetos".
+
+Neste capítulo, vamos apresentar uma visão geral de cada um. Nos capítulos seguintes, mergulharemos em detalhes e exemplos de código para cada um deles.
+
+<CardGrid>
+    <Card title="1. Encapsulamento 🛡️">
+        <p><strong>A Ideia:</strong> Agrupar dados (atributos) e os métodos que os manipulam dentro de um objeto, escondendo a complexidade interna do mundo exterior.</p>
+        <p><strong>Analogia:</strong> O painel de um carro. Você interage com o volante, pedais e alavancas (a interface pública), mas não precisa saber como o motor, a transmissão ou os freios funcionam internamente (os detalhes privados).</p>
+        <p><strong>Benefício Principal:</strong> Segurança e simplicidade. Protege os dados de modificações indevidas e simplifica o uso do objeto.</p>
+    </Card>
+    <Card title="2. Herança 🧬">
+        <p><strong>A Ideia:</strong> Permitir que uma nova classe (filha) herde atributos e métodos de uma classe existente (pai), reutilizando código e criando uma hierarquia.</p>
+        <p><strong>Analogia:</strong> Um `CarroEletrico` é um tipo de `Carro`. Ele herda todas as características de um carro (rodas, volante, capacidade de acelerar), mas adiciona suas próprias características únicas (capacidade de `carregarBateria()`).</p>
+        <p><strong>Benefício Principal:</strong> Reutilização de código e organização. Evita a duplicação e cria relações lógicas entre as classes.</p>
+    </Card>
+    <Card title="3. Polimorfismo 🌀">
+        <p><strong>A Ideia:</strong> A capacidade de objetos de diferentes classes responderem à mesma mensagem (chamada de método) de maneiras específicas para cada um.</p>
+        <p><strong>Analogia:</strong> Se você pedir para diferentes animais (`Cachorro`, `Gato`, `Pato`) para `emitirSom()`, cada um responderá de sua própria maneira (latindo, miando, grasnando), embora a "mensagem" enviada seja a mesma.</p>
+        <p><strong>Benefício Principal:</strong> Flexibilidade e desacoplamento. Permite escrever código genérico que pode operar sobre diferentes tipos de objetos sem conhecê-los em detalhes.</p>
+    </Card>
+    <Card title="4. Abstração 🧠">
+        <p><strong>A Ideia:</strong> Focar nos aspectos essenciais de um objeto, ignorando os detalhes irrelevantes. É o resultado do encapsulamento e do polimorfismo trabalhando juntos.</p>
+        <p><strong>Analogia:</strong> O controle remoto da sua TV. Ele oferece uma interface simples (`aumentarVolume()`, `trocarCanal()`) que abstrai toda a complexidade eletrônica interna da televisão. Você só precisa saber *o que* ele faz, não *como* ele faz.</p>
+        <p><strong>Benefício Principal:</strong> Redução da complexidade. Permite que você use objetos complexos através de interfaces simples.</p>
+    </Card>
+</CardGrid>
+
+<Aside type="note" title="Conexão com o Nest.js">
+Você verá esses pilares em ação por todo o Nest.js:
+- **Encapsulamento** nos `Services`, que escondem a lógica de acesso ao banco de dados.
+- **Herança** quando você cria seu próprio `Guard` estendendo uma classe base.
+- **Polimorfismo** e **Abstração** nas `Interfaces` que definem "contratos" como `CanActivate` ou `PipeTransform`, onde classes diferentes podem implementar a mesma interface de formas únicas.
+</Aside>

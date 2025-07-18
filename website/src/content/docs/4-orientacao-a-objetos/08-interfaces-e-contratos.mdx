@@ -1,0 +1,137 @@
+---
+title: "Interfaces: Definindo Contratos em TypeScript"
+description: "Aprenda a usar Interfaces em TypeScript para criar contratos que garantem a 'forma' de objetos e classes, promovendo um código mais desacoplado e flexível."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { TabItem, Tabs } from '@astrojs/starlight/components';
+
+Além das classes abstratas, o TypeScript nos oferece outra ferramenta para definir "contratos": as **Interfaces**.
+
+Uma interface é uma estrutura que define a sintaxe que uma entidade (como uma classe ou um objeto) deve seguir. Ela descreve a "forma" que um objeto deve ter, especificando quais propriedades e métodos ele deve possuir, mas **sem fornecer nenhuma implementação**.
+
+<Aside type="tip" title="Analogia: O Manual de Instruções">
+Pense em uma interface como o manual de instruções para construir um aparelho eletrônico. O manual diz: "Este aparelho deve ter um botão de ligar, um botão de volume e uma tela". Ele não diz *como* esses componentes devem ser fabricados internamente, apenas que eles **devem existir**. Qualquer fabricante que seguir o manual estará criando um aparelho "compatível".
+</Aside>
+
+## Definindo e Usando uma Interface
+
+A sintaxe para criar uma interface é muito simples. Vamos definir um contrato para qualquer coisa que seja "imprimível".
+
+```typescript
+// Definindo o contrato
+interface Imprimivel {
+  // A interface diz que qualquer objeto Imprimivel DEVE ter um método chamado `imprimir`.
+  // Este método não recebe parâmetros e não retorna nada (void).
+  imprimir(): void;
+}
+```
+
+Agora, podemos fazer com que nossas classes "assinem" este contrato usando a palavra-chave `implements`.
+
+```typescript
+class Fatura implements Imprimivel {
+  constructor(public numero: number, public valor: number) {}
+
+  // A classe Fatura é OBRIGADA a fornecer uma implementação para o método `imprimir`.
+  imprimir(): void {
+    console.log(`Fatura #${this.numero} - Valor: R$${this.valor}`);
+  }
+}
+
+class Relatorio implements Imprimivel {
+  constructor(public titulo: string) {}
+
+  // A classe Relatorio também implementa o contrato, mas de uma forma diferente.
+  imprimir(): void {
+    console.log(`Imprimindo relatório: ${this.titulo}`);
+  }
+}
+```
+Se uma classe usa `implements Imprimivel` mas não fornece um método `imprimir()` com a assinatura correta, o TypeScript acusará um erro de compilação.
+
+## Comparação: `interface` vs. `abstract class` vs. `type`
+
+Interfaces, classes abstratas e tipos (`type alias`) podem, à primeira vista, parecer ter propósitos sobrepostos, mas é importante entender quais são suas diferenças para escrever um código TypeScript limpo e idiomático.
+
+<Tabs>
+<TabItem label="Interface">
+**Foco:** Descrever a **forma** de um objeto ou o **contrato** de uma classe.
+
+-   **O que é:** Um contrato puramente estrutural. Não gera código JavaScript.
+-   **Herança:** Pode `extends` outra(s) interface(s).
+-   **Implementação:** Uma classe pode `implements` múltiplas interfaces.
+-   **Declaration Merging:** Se você declarar a mesma interface duas vezes, suas propriedades são unidas. Isso é útil para estender interfaces de bibliotecas de terceiros.
+
+```typescript
+interface Ponto { x: number; }
+interface Ponto { y: number; }
+const p: Ponto = { x: 10, y: 20 }; // Válido!
+```
+
+**Quando usar:** A escolha padrão para definir a forma de objetos e para criar contratos para classes. É o "pão com manteiga" da tipagem de objetos.
+</TabItem>
+
+<TabItem label="Type Alias">
+**Foco:** Dar um **apelido** a qualquer tipo, incluindo tipos primitivos, uniões, tuplas, etc.
+
+-   **O que é:** Um apelido. Não é um novo tipo, apenas um nome diferente para um tipo existente.
+-   **Flexibilidade:** Pode representar tipos mais complexos que interfaces não conseguem, como tipos de união (`string | number`) ou tipos mapeados.
+-   **Declaration Merging:** Não suporta. Você não pode declarar o mesmo `type` duas vezes.
+
+```typescript
+type ID = string | number;
+type Ponto = { x: number; y: number; };
+type Status = 'ativo' | 'inativo';
+```
+
+**Quando usar:** Para tipos de união, tuplas, ou quando você quer apenas um apelido simples para um tipo primitivo ou um objeto sem a intenção de que ele seja implementado por uma classe.
+</TabItem>
+
+<TabItem label="Abstract Class">
+**Foco:** Criar uma **classe base** que compartilha código e define um contrato.
+
+-   **O que é:** Uma classe "real" que é transpilada para JavaScript, mas que não pode ser instanciada diretamente.
+-   **Herança:** Uma classe só pode `extends` uma única classe (abstrata ou não).
+-   **Implementação:** Pode conter tanto métodos abstratos (sem implementação) quanto métodos concretos (com implementação), que são herdados pelas classes filhas.
+
+```typescript
+abstract class Animal {
+  // Método concreto (compartilhado)
+  mover() { console.log('Movendo...'); }
+  // Método abstrato (contrato)
+  abstract fazerBarulho(): void;
+}
+```
+
+**Quando usar:** Quando você tem um grupo de classes relacionadas (relação "é um tipo de") e quer **compartilhar código implementado** entre elas, além de forçar um contrato.
+</TabItem>
+</Tabs>
+
+<Aside type="tip">
+**Regra geral:** Prefira usar **interfaces** para definir contratos. Use **classes abstratas** apenas quando precisar compartilhar lógica implementada entre classes que possuem uma clara relação de herança "é um tipo de".
+</Aside>
+
+## Conexão com o Nest.js
+
+O Nest.js faz uso extensivo de interfaces para definir seus "building blocks". Quando você cria um `Pipe`, por exemplo, você não herda de uma classe, você implementa uma interface.
+
+```typescript
+import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+
+@Injectable()
+export class MeuPipe implements PipeTransform { // Assinando o contrato PipeTransform
+  // O TypeScript força você a implementar este método
+  transform(value: any, metadata: ArgumentMetadata) {
+    // ... sua lógica de transformação aqui
+    return value;
+  }
+}
+```
+
+Outros exemplos no Nest.js incluem:
+-   `CanActivate` para Guards.
+-   `NestInterceptor` para Interceptors.
+-   `ExceptionFilter` para Filtros de Exceção.
+
+Ao usar `implements`, você garante que sua classe tem a "forma" correta que o Nest.js espera para que ela funcione como um de seus componentes.

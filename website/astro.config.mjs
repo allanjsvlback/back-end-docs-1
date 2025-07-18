@@ -67,17 +67,21 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Orientação a Objetos com TypeScript',
+					autogenerate: { directory: '4-orientacao-a-objetos' }
+				},
+				{
 					label: 'Começando com Nest.js',
 					items: [
-						{ label: 'O que é Nest.js e por que usar?', link: '4-comecando-com-nest-js/1-o-que-e-nest' },
-						{ label: 'Instalação e Primeiro Projeto', link: '4-comecando-com-nest-js/2-instalacao-e-primeiro-projeto' },
-						{ label: 'Estrutura de Pastas e Arquivos', link: '4-comecando-com-nest-js/3-estrutura-de-pastas' },
-						{ label: 'Executando sua Aplicação', link: '4-comecando-com-nest-js/4-executando-a-aplicacao' },
+						{ label: 'O que é Nest.js e por que usar?', link: '5-comecando-com-nest-js/1-o-que-e-nest' },
+						{ label: 'Instalação e Primeiro Projeto', link: '5-comecando-com-nest-js/2-instalacao-e-primeiro-projeto' },
+						{ label: 'Estrutura de Pastas e Arquivos', link: '5-comecando-com-nest-js/3-estrutura-de-pastas' },
+						{ label: 'Executando sua Aplicação', link: '5-comecando-com-nest-js/4-executando-a-aplicacao' },
 					],
 				},
 				{
 					label: 'Projeto Prático: API de Gerenciador de Tarefas',
-					autogenerate: { directory: '5-projeto-pratico' }
+					autogenerate: { directory: '6-projeto-pratico' }
 				},
 			],
 		}),

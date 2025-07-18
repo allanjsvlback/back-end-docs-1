@@ -1,6 +1,6 @@
 ---
 title: "Passo 5: Implementando Autenticação com JWT e Passport"
-description: "Vamos criar um sistema de login robusto usando Passport.js para a estratégia de autenticação e JSON Web Tokens (JWT) para gerar credenciais de acesso seguras."
+description: "Vamos criar um sistema de login usando Passport.js para a estratégia de autenticação e JSON Web Tokens (JWT) para gerar credenciais de acesso seguras."
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -9,7 +9,7 @@ Agora que os usuários podem se registrar, precisamos de uma forma para que eles
 
 Esse passaporte será um **JSON Web Token (JWT)**.
 
-Para orquestrar tudo isso, usaremos duas bibliotecas poderosas do ecossistema Nest.js:
+Para orquestrar tudo isso, usaremos duas bibliotecas do ecossistema Nest.js:
 -   **`@nestjs/passport`**: Uma camada de abstração sobre a popular biblioteca [Passport.js](http://www.passportjs.org/), que facilita a implementação de diferentes estratégias de autenticação.
 -   **`@nestjs/jwt`**: Uma biblioteca para gerar e verificar tokens JWT.
 

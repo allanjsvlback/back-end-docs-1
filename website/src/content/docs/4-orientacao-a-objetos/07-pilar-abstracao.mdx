@@ -1,0 +1,93 @@
+---
+title: "Pilar 4: Abstração"
+description: "Explore a Abstração, o pilar da OO focado em expor apenas o essencial e esconder a complexidade, usando classes e métodos abstratos para criar contratos."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+A **Abstração** é o pilar da Orientação a Objetos que se concentra em **ocultar a complexidade e expor apenas a funcionalidade essencial**. É o resultado natural do encapsulamento e do polimorfismo trabalhando juntos.
+
+A ideia é criar um modelo simplificado de algo complexo. Em vez de se preocupar com *como* algo funciona internamente, você se preocupa apenas com *o que* ele faz.
+
+<CardGrid>
+    <Card title="Analogia 1: O Aplicativo de Mapas">
+        Quando você pede para o seu aplicativo de mapas calcular a melhor rota, você insere um endereço de partida e um de destino. Você interage com uma interface simples. O aplicativo **abstrai** toda a complexidade por trás dessa operação: algoritmos de busca, dados de tráfego em tempo real, cálculo de distâncias, etc. Você obtém o resultado sem precisar conhecer os detalhes.
+    </Card>
+    <Card title="Analogia 2: A Máquina de Café">
+        Uma máquina de café moderna tem um botão: "Fazer Espresso". Você aperta o botão e obtém um café. A máquina **abstrai** o processo de moer os grãos, aquecer a água na temperatura exata, aplicar a pressão correta e dispensar a bebida. A interface (`apertarBotao()`) é simples, mas a implementação é complexa e está oculta.
+    </Card>
+</CardGrid>
+
+Na programação, a abstração nos permite criar "contratos" ou "modelos" que definem o que um conjunto de classes deve ser capaz de fazer, sem ditar como elas devem fazer.
+
+## Classes e Métodos Abstratos
+
+Para implementar a abstração em TypeScript, usamos a palavra-chave `abstract`.
+
+-   **`abstract class`**: É uma classe "incompleta". Ela serve como um modelo base, mas **não pode ser instanciada diretamente** com `new`. Sua única finalidade é ser herdada por outras classes.
+-   **`abstract method`**: É um método declarado dentro de uma classe abstrata, mas **sem implementação** (sem corpo `{...}`). Ele apenas define a assinatura do método (nome, parâmetros e tipo de retorno). Qualquer classe filha que herdar da classe abstrata é **obrigada** a fornecer uma implementação para todos os seus métodos abstratos.
+
+## Exemplo Prático: Formas Geométricas
+
+Vamos modelar um sistema para calcular a área de diferentes formas geométricas. Sabemos que toda forma "tem uma área", mas a fórmula para calculá-la é diferente para cada uma. Este é um caso de uso perfeito para abstração.
+
+```typescript
+// 1. A Classe Abstrata (o contrato)
+abstract class FormaGeometrica {
+  // Um método abstrato. Note que não tem corpo.
+  // Ele estabelece um contrato: toda classe filha DEVE implementar `calcularArea()`.
+  abstract calcularArea(): number;
+
+  // Uma classe abstrata também pode ter métodos concretos.
+  exibirDescricao(): void {
+    console.log('Eu sou uma forma geométrica.');
+  }
+}
+
+// 2. As Classes Concretas (a implementação)
+
+class Circulo extends FormaGeometrica {
+  constructor(public raio: number) {
+    super(); // Construtor de classes abstratas deve ser chamado
+  }
+
+  // O Circulo é OBRIGADO a implementar o método abstrato
+  override calcularArea(): number {
+    return Math.PI * this.raio * this.raio;
+  }
+}
+
+class Retangulo extends FormaGeometrica {
+  constructor(public largura: number, public altura: number) {
+    super();
+  }
+
+  // O Retangulo também é OBRIGADO a implementar o método
+  override calcularArea(): number {
+    return this.largura * this.altura;
+  }
+}
+
+// const forma = new FormaGeometrica(); // Erro! Não se pode instanciar uma classe abstrata.
+
+const meuCirculo = new Circulo(10);
+const meuRetangulo = new Retangulo(5, 10);
+
+console.log(meuCirculo.calcularArea());      // Saída: 314.159...
+console.log(meuRetangulo.calcularArea());    // Saída: 50
+
+meuCirculo.exibirDescricao(); // Saída: Eu sou uma forma geométrica. (Método concreto herdado)
+```
+
+### Por que usar Classes Abstratas?
+
+Uma classe abstrata é usada para herança quando você quer **forçar um contrato**. Ela garante que qualquer desenvolvedor que crie uma nova `FormaGeometrica` não se esqueça de implementar a lógica crucial de `calcularArea()`. Isso torna o sistema mais previsível.
+
+<Aside type="note">
+A abstração é o pilar que une tudo. Ao usar uma classe `Circulo`, você está se beneficiando:
+-   Do **Encapsulamento**: Você não precisa saber a fórmula de `Math.PI * r * r`.
+-   Da **Herança**: O `Circulo` herda o método `exibirDescricao()`.
+-   Do **Polimorfismo**: Um array de `FormaGeometrica` poderia chamar `calcularArea()` em cada item, e cada forma responderia corretamente.
+-   Da **Abstração**: Você apenas chama `meuCirculo.calcularArea()` e confia que ele lhe dará a área, sem se preocupar com os detalhes da implementação.
+</Aside>

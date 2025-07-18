@@ -7,7 +7,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 Nest.js é um framework Node.js progressivo para construir aplicações de backend eficientes, confiáveis e escaláveis. Ele é construído com e sobre o TypeScript, o que traz uma sólida tipagem estática e as últimas funcionalidades do ECMAScript para o desenvolvimento do lado do servidor.
 
-Por baixo dos panos, Nest.js faz uso de frameworks HTTP robustos como **Express.js** (o padrão) e, opcionalmente, pode ser configurado para usar **Fastify**. No entanto, ele abstrai a complexidade desses frameworks, oferecendo uma camada de arquitetura que força boas práticas e padrões de design.
+Por baixo dos panos, Nest.js faz uso de frameworks HTTP como **Express.js** (o padrão) e, opcionalmente, pode ser configurado para usar **Fastify**. No entanto, ele abstrai a complexidade desses frameworks, oferecendo uma camada de arquitetura que força boas práticas e padrões de design.
 
 ## A Filosofia: Arquitetura Opinativa
 
@@ -29,11 +29,11 @@ A divisão clara de responsabilidades entre Controllers, Services e Módulos gar
 ### TypeScript como Cidadão de Primeira Classe
 Embora seja possível usar TypeScript com Express, o Nest.js foi projetado em torno dele. Isso significa que você obtém, desde o início, todos os benefícios da tipagem estática:
 -   Detecção de erros em tempo de desenvolvimento, não em produção.
--   Autocompletar (IntelliSense) poderoso no seu editor de código.
+-   Autocompletar (IntelliSense) melhorado no seu editor de código.
 -   Refatoração de código mais segura e confiável.
 
 ### Injeção de Dependência (DI) Integrada
-Nest.js possui um poderoso sistema de Injeção de Dependência. Em vez de uma classe criar suas próprias dependências, elas são "injetadas" de fora pelo framework. Isso resulta em:
+Nest.js possui um sistema de Injeção de Dependência. Em vez de uma classe criar suas próprias dependências, elas são "injetadas" de fora pelo framework. Isso resulta em:
 -   **Baixo acoplamento:** As classes são mais independentes umas das outras.
 -   **Maior testabilidade:** É muito mais fácil "mockar" (simular) dependências em testes unitários.
 -   **Reutilização de código:** Services e outros providers podem ser facilmente compartilhados por toda a aplicação.

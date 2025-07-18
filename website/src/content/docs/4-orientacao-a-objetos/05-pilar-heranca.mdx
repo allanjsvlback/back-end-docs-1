@@ -1,0 +1,120 @@
+---
+title: "Pilar 2: Herança"
+description: "Explore a Herança, o pilar da OO que permite criar novas classes a partir de existentes, promovendo a reutilização de código e a criação de hierarquias lógicas."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+A **Herança** é um mecanismo que permite que uma classe (chamada de **classe filha** ou **subclasse**) adquira os atributos e métodos de outra classe (a **classe pai** ou **superclasse**). É o pilar da Orientação a Objetos que lida diretamente com a **reutilização de código**.
+
+A ideia principal é criar uma relação "é um tipo de". Por exemplo:
+-   Um `Cachorro` **é um tipo de** `Animal`.
+-   Um `CarroEletrico` **é um tipo de** `Veiculo`.
+-   Um `AdminController` **é um tipo de** `BaseController`.
+
+A classe filha herda tudo o que é `public` e `protected` da classe pai, e pode então adicionar seus próprios atributos e métodos exclusivos ou modificar os comportamentos herdados.
+
+## Implementando a Herança em TypeScript
+
+Para implementar a herança, usamos a palavra-chave `extends`. Vamos construir um exemplo com animais.
+
+### A Classe Pai (`Animal`)
+
+Primeiro, criamos uma classe base `Animal` com características e comportamentos comuns a todos os animais.
+
+```typescript
+// Classe Pai (Superclasse)
+class Animal {
+  constructor(public nome: string, public idade: number) {}
+
+  comer(): void {
+    console.log(`${this.nome} está comendo.`);
+  }
+
+  dormir(): void {
+    console.log(`${this.nome} está dormindo.`);
+  }
+}
+```
+
+### As Classes Filhas (`Cachorro` e `Gato`)
+
+Agora, podemos criar classes mais específicas que herdam de `Animal`.
+
+```typescript
+// Classe Filha (Subclasse)
+class Cachorro extends Animal {
+  // O Cachorro herda 'nome', 'idade', 'comer()' e 'dormir()'
+
+  // Método específico do Cachorro
+  latir(): void {
+    console.log('Au au!');
+  }
+}
+
+// Outra Classe Filha
+class Gato extends Animal {
+  // O Gato também herda tudo de Animal
+
+  // Método específico do Gato
+  miar(): void {
+    console.log('Miau!');
+  }
+}
+```
+
+### Usando as Classes
+
+Agora podemos criar instâncias das nossas classes filhas e ver a herança em ação.
+
+```typescript
+const rex = new Cachorro('Rex', 5);
+rex.comer();  // Saída: Rex está comendo. (Método herdado de Animal)
+rex.dormir(); // Saída: Rex está dormindo. (Método herdado de Animal)
+rex.latir();  // Saída: Au au! (Método específico de Cachorro)
+
+const felix = new Gato('Felix', 3);
+felix.comer(); // Saída: Felix está comendo. (Método herdado)
+felix.miar();  // Saída: Miau! (Método específico de Gato)
+```
+Como você pode ver, não precisamos reescrever os métodos `comer()` e `dormir()` em `Cachorro` e `Gato`. Nós os reutilizamos diretamente da classe `Animal`.
+
+## Estendendo o Construtor com `super()`
+
+E se uma classe filha precisar de seus próprios atributos no construtor? Para isso, usamos a palavra-chave `super()`.
+
+`super()` é uma chamada especial para o **construtor da classe pai**. Ela deve ser a primeira linha dentro do construtor da classe filha.
+
+Vamos criar uma classe `Passaro` que, além de nome e idade, também tem uma `corDaPena`.
+
+```typescript
+class Passaro extends Animal {
+  constructor(
+    nome: string, // Parâmetro para o construtor do Pai
+    idade: number, // Parâmetro para o construtor do Pai
+    public corDaPena: string, // Parâmetro específico do Filho
+  ) {
+    // 1. Chama o construtor da classe Pai (Animal) primeiro
+    super(nome, idade);
+    
+    // 2. Agora podemos inicializar as propriedades do Filho
+    // (O `public corDaPena` já faz isso automaticamente, mas a lógica é essa)
+  }
+
+  voar(): void {
+    console.log(`${this.nome} está voando.`);
+  }
+}
+
+const piuPiu = new Passaro('Piu-piu', 2, 'amarela');
+piuPiu.comer(); // Herdado
+console.log(piuPiu.corDaPena); // Saída: amarela
+piuPiu.voar(); // Específico
+```
+
+<Aside type="caution" title="Herança vs. Composição">
+A herança é útil, mas deve ser usada com cuidado. Uma regra geral é usá-la apenas quando a relação é claramente um "é um tipo de". Abusar da herança pode criar hierarquias complexas e frágeis. Muitas vezes, uma alternativa melhor é a **Composição**, onde uma classe "tem um" objeto de outra classe como um de seus atributos, em vez de herdar dela.
+</Aside>
+
+A herança serve para evitar a duplicação de código e criar um modelo de domínio lógico e organizado. No Nest.js, você pode encontrar a herança ao criar suas próprias classes de exceção que estendem a `HttpException`, por exemplo, herdando todo o comportamento de uma exceção HTTP e apenas customizando a mensagem ou o status.

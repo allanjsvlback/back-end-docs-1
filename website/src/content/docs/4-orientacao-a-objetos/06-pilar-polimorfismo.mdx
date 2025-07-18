@@ -1,0 +1,93 @@
+---
+title: "Pilar 3: Polimorfismo"
+description: "Descubra o Polimorfismo, o pilar da OO que permite que objetos de diferentes classes respondam à mesma mensagem de maneiras únicas, promovendo flexibilidade e desacoplamento."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card } from '@astrojs/starlight/components';
+
+**Polimorfismo**, do grego, significa "muitas formas". Na Programação Orientada a Objetos, é a capacidade de um objeto poder se apresentar de "muitas formas" diferentes.
+
+De forma mais prática, o polimorfismo permite que você trate objetos de classes diferentes de maneira uniforme, desde que eles compartilhem uma mesma "interface" ou herança. Ele possibilita que uma mesma ação (uma chamada de método) tenha comportamentos diferentes dependendo do objeto que a está executando.
+
+Vamos continuar com nossa analogia dos animais. Todos os animais que criamos (`Cachorro`, `Gato`, `Passaro`) podem `comer()`, mas e se quiséssemos um método `fazerBarulho()`? Cada animal faria um barulho diferente.
+
+## Polimorfismo em Ação: Sobrescrita de Métodos
+
+O tipo mais comum de polimorfismo é a **sobrescrita de método** (ou *method overriding*). Isso acontece quando uma classe filha fornece uma implementação específica para um método que já é definido na sua classe pai.
+
+Vamos adicionar um método `fazerBarulho()` na nossa classe `Animal` e ver como as classes filhas podem sobrescrevê-lo.
+
+```typescript
+// Classe Pai (Superclasse)
+class Animal {
+  constructor(public nome: string) {}
+
+  // Um método genérico que será sobrescrito
+  fazerBarulho(): void {
+    console.log(`${this.nome} fez um barulho genérico.`);
+  }
+}
+
+// --- Classes Filhas ---
+
+class Cachorro extends Animal {
+  // Sobrescrevendo o método da classe pai
+  fazerBarulho(): void {
+    console.log(`${this.nome} latiu: Au au!`);
+  }
+}
+
+class Gato extends Animal {
+  // Sobrescrevendo o método da classe pai
+  fazerBarulho(): void {
+    console.log(`${this.nome} miou: Miau!`);
+  }
+}
+```
+
+<Aside type="tip" title="A palavra-chave `override`">
+A partir da versão 4.3 do TypeScript, você pode usar a palavra-chave `override` para indicar explicitamente que está sobrescrevendo um método. Isso ajuda a evitar erros, pois o compilador irá avisar se o método que você está tentando sobrescrever não existir na classe pai.
+
+```typescript
+class Cachorro extends Animal {
+  override fazerBarulho(): void { // Mais seguro!
+    console.log(`${this.nome} latiu: Au au!`);
+  }
+}
+```
+</Aside>
+
+## O Poder do Polimorfismo
+
+A verdadeira mágica acontece quando tratamos todos esses objetos diferentes de forma unificada. Podemos ter um array de `Animal` e chamar o método `fazerBarulho()` em cada um, sem precisar saber o tipo específico do animal.
+
+```typescript
+const rex = new Cachorro('Rex');
+const felix = new Gato('Felix');
+const animalGenerico = new Animal('Criatura');
+
+// Criamos um array do tipo da classe Pai (Animal)
+const animais: Animal[] = [rex, felix, animalGenerico];
+
+// Iteramos sobre o array e chamamos o mesmo método em todos
+animais.forEach(animal => {
+  animal.fazerBarulho();
+});
+
+/*
+Saída do console:
+Rex latiu: Au au!
+Felix miou: Miau!
+Criatura fez um barulho genérico.
+*/
+```
+
+Repare no poder disso: o laço `forEach` não precisa de um `if (animal é Cachorro)` ou `if (animal é Gato)`. Ele simplesmente confia que todo objeto do tipo `Animal` terá um método `fazerBarulho()`. O objeto correto "sabe" qual versão do método executar em tempo de execução.
+
+### Benefícios do Polimorfismo
+
+-   **Flexibilidade e Extensibilidade:** Podemos adicionar uma nova classe `Vaca` que herda de `Animal` e sobrescreve `fazerBarulho()`, e o nosso laço `forEach` continuaria funcionando perfeitamente, sem nenhuma alteração. Isso torna o código aberto para extensão, mas fechado para modificação (um dos princípios SOLID).
+-   **Desacoplamento:** O código que usa os objetos (como a função `forEach`) não precisa conhecer os detalhes de cada implementação. Ele só precisa conhecer a interface comum (a classe `Animal`).
+
+O polimorfismo é um conceito que permite escrever um código mais limpo, genérico e flexível. No Nest.js, você o vê em ação quando diferentes `Pipes` podem implementar o método `transform()` de maneiras completamente diferentes, ou quando diferentes `Guards` implementam `canActivate()`, cada um com sua própria lógica de permissão.

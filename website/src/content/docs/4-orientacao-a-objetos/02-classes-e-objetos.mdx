@@ -1,0 +1,102 @@
+---
+title: "Classes e Objetos: A Planta e a Casa"
+description: "Entenda os dois conceitos mais fundamentais da Orientação a Objetos: Classes como o molde e Objetos como a instância concreta, com exemplos práticos em TypeScript."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Se a Programação Orientada a Objetos é sobre construir sistemas com "objetos", a primeira pergunta é: de onde vêm esses objetos? A resposta está em seus moldes: as **Classes**.
+
+A relação entre uma Classe e um Objeto é a mesma entre a **planta de uma casa** e a **casa real construída**.
+
+<CardGrid>
+    <Card title="📜📐 Classe: A Planta">
+        Uma **Classe** é um molde, um modelo, uma planta baixa. Ela define a estrutura que todos os objetos criados a partir dela terão. Ela não é algo "real" que você pode usar diretamente; é apenas a descrição de:
+        <ul>
+            <li><strong>Atributos (Propriedades):</strong> As características que o objeto terá (ex: `cor`, `numeroDePortas`).</li>
+            <li><strong>Métodos (Comportamentos):</strong> As ações que o objeto poderá executar (ex: `acelerar()`, `frear()`).</li>
+        </ul>
+    </Card>
+    <Card title="🏠 Objeto: A Casa">
+        Um **Objeto** é a instância concreta, a materialização de uma classe. É a casa real construída a partir da planta. Você pode ter várias casas (objetos) construídas a partir da mesma planta (classe), e cada uma delas pode ter características ligeiramente diferentes (uma casa pode ser azul, outra vermelha), mas todas seguem a mesma estrutura fundamental.
+    </Card>
+</CardGrid>
+
+## Classes em TypeScript
+
+Vamos ver como isso se traduz em código TypeScript. Vamos criar uma classe `Carro` que servirá como nosso molde.
+
+```typescript
+class Carro {
+  // 1. Atributos (Propriedades)
+  marca: string;
+  modelo: string;
+  ano: number;
+  velocidadeAtual: number = 0; // Podemos definir um valor inicial
+
+  // 2. O Construtor: Um método especial de inicialização
+  constructor(marca: string, modelo: string, ano: number) {
+    // A palavra-chave `this` se refere à instância atual (o objeto que está sendo criado)
+    this.marca = marca;
+    this.modelo = modelo;
+    this.ano = ano;
+  }
+
+  // 3. Métodos (Comportamentos)
+  acelerar(velocidade: number): void {
+    this.velocidadeAtual += velocidade;
+    console.log(`Acelerando para ${this.velocidadeAtual} km/h.`);
+  }
+
+  frear(): void {
+    this.velocidadeAtual = 0;
+    console.log('Carro parado.');
+  }
+}
+```
+
+### O `constructor`
+O **construtor** é um método especial que é executado automaticamente sempre que um novo objeto é criado a partir da classe. Sua principal função é inicializar os atributos do objeto, recebendo os valores necessários para "montá-lo".
+
+## Criando Objetos (Instâncias)
+
+Agora que temos nossa planta (`class Carro`), podemos construir algumas casas (objetos). Para criar um objeto a partir de uma classe, usamos a palavra-chave `new`.
+
+```typescript
+// Criando duas instâncias (objetos) diferentes da classe Carro
+const meuFusca = new Carro('Volkswagen', 'Fusca', 1975);
+const meuTesla = new Carro('Tesla', 'Model S', 2023);
+
+// Cada objeto tem seus próprios atributos, baseados nos valores que passamos para o construtor
+console.log(meuFusca.marca); // Saída: Volkswagen
+console.log(meuTesla.marca);  // Saída: Tesla
+
+// E podemos chamar os métodos em cada objeto
+meuFusca.acelerar(50); // Saída: Acelerando para 50 km/h.
+meuTesla.acelerar(100); // Saída: Acelerando para 100 km/h.
+
+console.log(meuFusca.velocidadeAtual); // Saída: 50
+console.log(meuTesla.velocidadeAtual); // Saída: 100
+```
+
+<Aside type="note" title="TypeScript Shorthand">
+O TypeScript oferece uma sintaxe mais curta e conveniente para declarar atributos e inicializá-los no construtor, usando modificadores de acesso como `public` ou `private`. Este código é funcionalmente idêntico ao primeiro:
+
+```typescript
+class Carro {
+  velocidadeAtual: number = 0;
+
+  constructor(
+    public marca: string, // `public` cria e inicializa a propriedade automaticamente
+    public modelo: string,
+    public ano: number,
+  ) {}
+
+  // Métodos continuam iguais...
+}
+```
+Esta é a forma que você mais verá em projetos Nest.js.
+</Aside>
+
+Entender a distinção entre a classe (o molde) e o objeto (a instância) é o primeiro e mais importante passo para pensar de forma orientada a objetos. Com essa base, estamos prontos para explorar os quatro grandes pilares que dão poder a este paradigma.

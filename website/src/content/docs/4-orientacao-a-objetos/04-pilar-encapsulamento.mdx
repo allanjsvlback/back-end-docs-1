@@ -1,0 +1,151 @@
+---
+title: "Pilar 1: Encapsulamento"
+description: "Mergulhe no Encapsulamento, o pilar da OO que agrupa dados e métodos em um objeto e os protege do mundo exterior usando modificadores de acesso como public e private."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { TabItem, Tabs } from '@astrojs/starlight/components';
+
+O **Encapsulamento** é o pilar mais fundamental da Orientação a Objetos. É a prática de agrupar os dados (atributos) e os métodos que os manipulam dentro de uma única unidade (a classe), e ao mesmo tempo, **esconder os detalhes da implementação** do mundo exterior.
+
+Pense novamente na analogia do carro: você, como motorista, não tem acesso direto para modificar a injeção de combustível do motor. Em vez disso, você interage com uma interface simples e segura: o pedal do acelerador. O carro **encapsula** a complexidade do motor.
+
+## Por que Encapsular?
+
+O principal objetivo do encapsulamento é proteger a **integridade** e a **consistência** de um objeto. Ao controlar o acesso aos seus dados, você pode:
+
+1.  **Evitar Modificações Indevidas:** Impedir que o estado interno do objeto seja alterado de forma inesperada ou inválida.
+2.  **Simplificar o Uso:** Expor apenas os métodos necessários para interagir com o objeto (sua "interface pública"), escondendo toda a complexidade interna.
+3.  **Facilitar a Manutenção:** Se a lógica interna de um método precisar mudar, você pode alterá-la sem quebrar o código que usa esse objeto, desde que a "assinatura" do método (seu nome e parâmetros) permaneça a mesma.
+
+## Modificadores de Acesso em TypeScript
+
+Para implementar o encapsulamento, o TypeScript nos fornece três palavras-chave principais, conhecidas como **modificadores de acesso**: `public`, `private` e `protected`.
+
+<Tabs>
+<TabItem label="public">
+`public` é o modificador padrão. Se você não especificar nada, a propriedade ou método será público.
+
+**Acesso:** Pode ser acessado de qualquer lugar: de dentro da própria classe, de classes filhas ou de fora da classe.
+
+```typescript
+class Exemplo {
+  public nome: string; // Acessível de qualquer lugar
+}
+
+const ex = new Exemplo();
+ex.nome = 'Teste'; // OK
+```
+</TabItem>
+<TabItem label="private">
+`private` é o mais restritivo.
+
+**Acesso:** Só pode ser acessado **de dentro da própria classe** onde foi declarado. Nem classes filhas nem código externo podem acessá-lo.
+
+```typescript
+class Exemplo {
+  private segredo: string = '123';
+
+  revelarSegredo() {
+    console.log(this.segredo); // OK, estamos dentro da classe
+  }
+}
+
+const ex = new Exemplo();
+ex.revelarSegredo(); // OK
+// ex.segredo = '456'; // Erro de compilação!
+```
+</TabItem>
+<TabItem label="protected">
+`protected` é um meio-termo.
+
+**Acesso:** Pode ser acessado de dentro da própria classe e também por **classes que herdam** dela, mas não por código externo.
+
+```typescript
+class Pai {
+  protected heranca: string = 'dinheiro';
+}
+
+class Filho extends Pai {
+  mostrarHeranca() {
+    console.log(this.heranca); // OK, Filho herda de Pai
+  }
+}
+
+const f = new Filho();
+f.mostrarHeranca(); // OK
+// f.heranca = 'dívidas'; // Erro de compilação!
+```
+</TabItem>
+</Tabs>
+
+## Exemplo Prático: Uma Conta Bancária
+
+Vamos ver um exemplo prático de como o encapsulamento protege os dados. Considere uma classe `ContaBancaria`.
+
+```typescript
+class ContaBancaria {
+  public readonly numeroDaConta: string; // `readonly` impede a alteração após a inicialização
+  private _saldo: number = 0; // Usamos `_` por convenção para indicar uma propriedade privada
+
+  constructor(numero: string) {
+    this.numeroDaConta = numero;
+  }
+
+  // Método público para obter o saldo (Getter)
+  get saldo(): number {
+    return this._saldo;
+  }
+
+  // Método público para depositar, com validação
+  depositar(valor: number): void {
+    if (valor <= 0) {
+      console.error('O valor do depósito deve ser positivo.');
+      return;
+    }
+    this._saldo += valor;
+    console.log(`Depósito de R$${valor} realizado. Saldo atual: R$${this._saldo}`);
+  }
+
+  // Método público para sacar, com validação
+  sacar(valor: number): void {
+    if (valor <= 0) {
+      console.error('O valor do saque deve ser positivo.');
+      return;
+    }
+    if (valor > this._saldo) {
+      console.error('Saldo insuficiente.');
+      return;
+    }
+    this._saldo -= valor;
+    console.log(`Saque de R$${valor} realizado. Saldo atual: R$${this._saldo}`);
+  }
+}
+
+const minhaConta = new ContaBancaria('12345-6');
+minhaConta.depositar(100); // OK
+minhaConta.sacar(30);     // OK
+// minhaConta._saldo = 1000000; // Erro! Não podemos acessar ou modificar o saldo diretamente.
+```
+Neste exemplo, o atributo `_saldo` é `private`. O mundo exterior não pode simplesmente alterá-lo. A única maneira de modificar o saldo é através dos métodos públicos `depositar()` e `sacar()`, que contêm a lógica de validação para garantir que a conta nunca fique em um estado inválido (como um saldo negativo após um saque).
+
+<Aside type="note" title="Getters e Setters">
+Em TypeScript (e em muitas linguagens de OO), `get` e `set` são palavras-chave especiais para criar "acessores". Um **getter** (`get saldo()`) permite ler uma propriedade privada como se ela fosse pública. (PS: Getters não recebem parâmetros)
+```ts
+// Com método normal:
+const saldo = conta.getSaldo();
+
+// Com getter:
+const saldo = conta.saldo;
+``` 
+Um **setter** (`set nome(novoNome: string)`) permite modificar uma propriedade privada, aplicando alguma lógica no processo.
+```ts
+// Sem setter
+usuario.setNome("Allan");
+
+// Com setter
+usuario.nome = "Allan";
+```
+</Aside>
+
+O encapsulamento é a base da segurança e da robustez em OO. Ao aplicá-lo, você cria componentes confiáveis e fáceis de usar, um princípio fundamental que o Nest.js utiliza extensivamente em seus `Services` para encapsular a lógica de acesso a dados.
