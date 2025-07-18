@@ -1,22 +1,22 @@
 ---
 title: "Interfaces: Definindo Contratos em TypeScript"
-description: "Aprenda a usar Interfaces em TypeScript para criar contratos que garantem a 'forma' de objetos e classes, promovendo um código mais desacoplado e flexível."
+description: "Aprenda a usar Interfaces em TypeScript para criar contratos robustos que garantem a 'forma' de objetos e classes, promovendo um código mais desacoplado e flexível."
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 import { TabItem, Tabs } from '@astrojs/starlight/components';
 
-Além das classes abstratas, o TypeScript nos oferece outra ferramenta para definir "contratos": as **Interfaces**.
+Além das classes abstratas, o TypeScript nos oferece outra ferramenta poderosa para definir "contratos": as **Interfaces**.
 
-Uma interface é uma estrutura que define a sintaxe que uma entidade (como uma classe ou um objeto) deve seguir. Ela descreve a "forma" que um objeto deve ter, especificando quais propriedades e métodos ele deve possuir, mas **sem fornecer nenhuma implementação**.
+Uma interface é uma estrutura que define a sintaxe que uma entidade (como uma classe, um objeto ou até uma função) deve seguir. Ela descreve a "forma" que essa entidade deve ter, mas **sem fornecer nenhuma implementação**.
 
 <Aside type="tip" title="Analogia: O Manual de Instruções">
 Pense em uma interface como o manual de instruções para construir um aparelho eletrônico. O manual diz: "Este aparelho deve ter um botão de ligar, um botão de volume e uma tela". Ele não diz *como* esses componentes devem ser fabricados internamente, apenas que eles **devem existir**. Qualquer fabricante que seguir o manual estará criando um aparelho "compatível".
 </Aside>
 
-## Definindo e Usando uma Interface
+## Usando Interfaces com Classes e Objetos
 
-A sintaxe para criar uma interface é muito simples. Vamos definir um contrato para qualquer coisa que seja "imprimível".
+O uso mais comum de interfaces é para garantir que uma classe tenha um conjunto específico de métodos e propriedades. Usamos a palavra-chave `implements` para isso.
 
 ```typescript
 // Definindo o contrato
@@ -25,20 +25,17 @@ interface Imprimivel {
   // Este método não recebe parâmetros e não retorna nada (void).
   imprimir(): void;
 }
-```
 
-Agora, podemos fazer com que nossas classes "assinem" este contrato usando a palavra-chave `implements`.
-
-```typescript
+// A classe Fatura é OBRIGADA a fornecer uma implementação para o método `imprimir`.
 class Fatura implements Imprimivel {
   constructor(public numero: number, public valor: number) {}
 
-  // A classe Fatura é OBRIGADA a fornecer uma implementação para o método `imprimir`.
   imprimir(): void {
     console.log(`Fatura #${this.numero} - Valor: R$${this.valor}`);
   }
 }
 
+// A classe Relatorio também implementa o contrato, mas de uma forma diferente.
 class Relatorio implements Imprimivel {
   constructor(public titulo: string) {}
 
@@ -50,13 +47,45 @@ class Relatorio implements Imprimivel {
 ```
 Se uma classe usa `implements Imprimivel` mas não fornece um método `imprimir()` com a assinatura correta, o TypeScript acusará um erro de compilação.
 
+## Usando Interfaces com Funções
+
+Uma capacidade menos conhecida, mas muito poderosa, das interfaces é a de descrever a **"forma" de uma função**. Isso é útil quando você quer garantir que uma variável ou parâmetro seja uma função que aceite certos argumentos e retorne um certo tipo de valor.
+
+A sintaxe é um pouco diferente: a interface não tem um nome para a função, ela *é* a própria assinatura da função.
+
+```typescript
+// Esta interface descreve uma função que:
+// - Recebe um parâmetro 'nome' do tipo string.
+// - Retorna um valor do tipo string.
+interface FuncaoDeSaudacao {
+  (nome: string): string;
+}
+
+// Agora podemos usar essa interface para tipar uma variável.
+// O TypeScript irá garantir que 'cumprimentar' corresponda ao contrato.
+const cumprimentar: FuncaoDeSaudacao = (nome) => {
+  return `Olá, ${nome}!`;
+};
+
+const despedir: FuncaoDeSaudacao = (pessoa) => {
+  return `Até mais, ${pessoa}!`;
+};
+
+console.log(cumprimentar('Mundo')); // Saída: Olá, Mundo!
+console.log(despedir('Ana'));     // Saída: Até mais, Ana!
+
+// O código abaixo daria um erro, pois não segue o contrato:
+// const invalido: FuncaoDeSaudacao = (numero: number) => { return numero; };
+```
+Isso é útil para criar APIs flexíveis, como em funções que recebem outras funções (callbacks) como argumento.
+
 ## Comparação: `interface` vs. `abstract class` vs. `type`
 
 Interfaces, classes abstratas e tipos (`type alias`) podem, à primeira vista, parecer ter propósitos sobrepostos, mas é importante entender quais são suas diferenças para escrever um código TypeScript limpo e idiomático.
 
 <Tabs>
 <TabItem label="Interface">
-**Foco:** Descrever a **forma** de um objeto ou o **contrato** de uma classe.
+**Foco:** Descrever a **forma** de uma entidade (objeto, classe ou função).
 
 -   **O que é:** Um contrato puramente estrutural. Não gera código JavaScript.
 -   **Herança:** Pode `extends` outra(s) interface(s).
@@ -69,7 +98,7 @@ interface Ponto { y: number; }
 const p: Ponto = { x: 10, y: 20 }; // Válido!
 ```
 
-**Quando usar:** A escolha padrão para definir a forma de objetos e para criar contratos para classes. É o "pão com manteiga" da tipagem de objetos.
+**Quando usar:** A escolha padrão para definir a forma de objetos e para criar contratos para classes e funções.
 </TabItem>
 
 <TabItem label="Type Alias">
@@ -112,26 +141,7 @@ abstract class Animal {
 **Regra geral:** Prefira usar **interfaces** para definir contratos. Use **classes abstratas** apenas quando precisar compartilhar lógica implementada entre classes que possuem uma clara relação de herança "é um tipo de".
 </Aside>
 
-## Conexão com o Nest.js
-
-O Nest.js faz uso extensivo de interfaces para definir seus "building blocks". Quando você cria um `Pipe`, por exemplo, você não herda de uma classe, você implementa uma interface.
-
-```typescript
-import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
-
-@Injectable()
-export class MeuPipe implements PipeTransform { // Assinando o contrato PipeTransform
-  // O TypeScript força você a implementar este método
-  transform(value: any, metadata: ArgumentMetadata) {
-    // ... sua lógica de transformação aqui
-    return value;
-  }
-}
-```
-
-Outros exemplos no Nest.js incluem:
--   `CanActivate` para Guards.
--   `NestInterceptor` para Interceptors.
--   `ExceptionFilter` para Filtros de Exceção.
-
-Ao usar `implements`, você garante que sua classe tem a "forma" correta que o Nest.js espera para que ela funcione como um de seus componentes.
+No Nest.js, você encontrará todos eles:
+-   **Interfaces** para definir os "contratos" dos componentes (`PipeTransform`, `CanActivate`).
+-   **Classes (incluindo abstratas)** como a base da sua aplicação (`Controller`, `Service`).
+-   **Types** para definir DTOs simples ou tipos de dados customizados dentro da sua lógica de negócio.
