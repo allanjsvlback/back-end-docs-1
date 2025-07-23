@@ -33,6 +33,9 @@ export default defineConfig({
 			],
 
 			title: 'Guia Back-End',
+			customCss: [
+				'./src/styles/theme.css',
+			],
 			social: {
 				github: 'https://github.com/allanjsvlback/back-end-docs-1',
 			},

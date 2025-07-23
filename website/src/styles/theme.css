@@ -1,0 +1,53 @@
+:root[data-theme='light'],
+[data-theme='light'] ::backdrop {
+	--sl-color-accent: #ea2845;
+	--sl-color-accent-low: #ffe9ee;
+	--sl-color-accent-high: #c11b38;
+
+	--sl-color-text: #1f1f1f;
+	--sl-color-text-accent: var(--sl-color-accent);
+	--sl-color-text-invert: #ffffff;
+
+	--sl-color-bg: #ffffff;
+	--sl-color-bg-nav: #fafafa;
+	--sl-color-bg-sidebar: #f5f5f5;
+	--sl-color-bg-inline-code: #f0f0f0;
+	--sl-color-bg-accent: #fff4f6;
+
+	--sl-color-hairline-light: #e5e5e5;
+	--sl-color-hairline: #cccccc;
+
+	--sl-color-link: var(--sl-color-accent);
+	--sl-color-link-hover: #c11b38;
+
+	--sl-color-tip-bg: #fff0f3;
+	--sl-color-tip-border: #ea2845;
+	--sl-color-tip-text: #2e0c10;
+}
+
+:root[data-theme='dark'],
+[data-theme='dark'] ::backdrop {
+	--sl-color-accent: #ea2845;
+	--sl-color-accent-low: #2e0c10;
+	--sl-color-accent-high: #ff4c6f;
+
+	--sl-color-text: #f5f5f5;
+	--sl-color-text-accent: #ff4c6f;
+	--sl-color-text-invert: #000000;
+
+	--sl-color-bg: #000000;
+	--sl-color-bg-nav: #0a0a0a;
+	--sl-color-bg-sidebar: #121212;
+	--sl-color-bg-inline-code: #1d1d1d;
+	--sl-color-bg-accent: #1e0f12;
+
+	--sl-color-hairline: #2a2a2a;
+	--sl-color-hairline-light: #3a3a3a;
+
+	--sl-color-link: #ff4c6f;
+	--sl-color-link-hover: #ff6b84;
+
+	--sl-color-tip-bg: #2a0d11;
+	--sl-color-tip-border: #ea2845;
+	--sl-color-tip-text: #ffcbd6;
+}
